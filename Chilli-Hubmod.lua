@@ -1,6 +1,7 @@
 -- =========================================================
--- LANGUAGE SELECTOR + RUNTIME GUI TRANSLATOR (EN -> VI) V10.5
--- TỐI ƯU: Cache dịch, chỉ hook GUI Chilli Hub, không hook CoreGui
+-- CHILLI HUB TRANSLATOR V10.7 (EN <-> VI)
+-- Tối ưu: Throttle 0.5s, Cache dịch, Skip text động, Batch hook
+-- Đã sửa: Đứng cứng, lag, dựt khi mở Chilli Hub
 -- =========================================================
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
@@ -9,7 +10,7 @@ local RunService = game:GetService("RunService")
 local SCRIPT_URL = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"
 
 -- =========================================================
--- TỪ ĐIỂN (giữ nguyên)
+-- TỪ ĐIỂN VIỆT HÓA
 -- =========================================================
 local DICT = {
     -- Tab chính
@@ -272,7 +273,7 @@ local DICT = {
 }
 
 -- =========================================================
--- CACHE DỊCH (TỐI ƯU SIÊU NHANH)
+-- HÀM DỊCH (TỐI ƯU - CACHE + SKIP TEXT ĐỘNG)
 -- =========================================================
 local sortedKeys = {}
 for k in pairs(DICT) do table.insert(sortedKeys, k) end
@@ -282,13 +283,29 @@ local escapePattern = function(s)
     return (s:gsub("([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1"))
 end
 
--- ✅ CACHE: text đã dịch rồi → trả về ngay, không quét lại
 local translateCache = {}
+
+-- ✅ Các pattern text ĐỘNG cần BỎ QUA (không dịch để tránh lag)
+local SKIP_PATTERNS = {
+    "^[%d%p%s]+$",              -- Chỉ có số/ký tự đặc biệt (0, 2:59, 0/100)
+    "^%$[%d%.]+[KMBT]?$",       -- $227M, $189M
+    "^%d+[KMBT]?$",             -- 250, 3K, 5M
+    "^[+%-]%$[%d%.]+[KMBT]?$",  -- +$278M, -$100K
+    "^%d+%.%d+s$",              -- 0.30s, 0.40s
+    "^%d+/%d+$",                -- 0/100, 1/3
+}
+
+local function shouldSkip(text)
+    for _, pat in ipairs(SKIP_PATTERNS) do
+        if text:match(pat) then return true end
+    end
+    return false
+end
 
 local function translateText(text)
     if type(text) ~= "string" or text == "" then return text end
     
-    -- Cache hit → trả về ngay (cực nhanh)
+    -- Cache hit → trả về ngay
     local cached = translateCache[text]
     if cached ~= nil then return cached end
     
@@ -299,13 +316,13 @@ local function translateText(text)
         return result
     end
     
-    -- ✅ BỎ QUA text thuần số/ký tự đặc biệt (không cần dịch)
-    if text:match("^[%d%p%s]+$") then
+    -- ✅ Bỏ qua text động (số, tiền, %, thời gian)
+    if shouldSkip(text) then
         translateCache[text] = text
         return text
     end
     
-    -- Fallback gsub
+    -- Fallback gsub (chỉ chạy khi text thực sự cần dịch)
     local out = text
     for _, en in ipairs(sortedKeys) do
         local vi = DICT[en]
@@ -320,53 +337,12 @@ local function translateText(text)
 end
 
 -- =========================================================
--- HOOK GUI (CHỈ HOOK CHILLI HUB, KHÔNG HOOK COREGUI)
+-- HOOK GUI (CÓ THROTTLE, CHỐNG DỰT)
 -- =========================================================
 local translating = false
-local hookedCount = 0
 
-local function hookObject(obj)
-    if not (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) then return end
-    if obj:GetAttribute("ChilliHooked") then return end
-    obj:SetAttribute("ChilliHooked", true)
-    hookedCount = hookedCount + 1
-    
-    local function apply()
-        if translating then return end
-        translating = true
-        
-        local ok, cur = pcall(function() return obj.Text end)
-        if ok and type(cur) == "string" and cur ~= "" then
-            local new = translateText(cur)
-            if new ~= cur then
-                pcall(function() obj.Text = new end)
-            end
-        end
-        
-        if obj:IsA("TextBox") then
-            local ok2, ph = pcall(function() return obj.PlaceholderText end)
-            if ok2 and type(ph) == "string" and ph ~= "" then
-                local new = translateText(ph)
-                if new ~= ph then
-                    pcall(function() obj.PlaceholderText = new end)
-                end
-            end
-        end
-        
-        translating = false
-    end
-    
-    apply()
-    obj:GetPropertyChangedSignal("Text"):Connect(apply)
-    if obj:IsA("TextBox") then
-        obj:GetPropertyChangedSignal("PlaceholderText"):Connect(apply)
-    end
-end
-
--- =========================================================
--- HOOK GUI (V10.6 - Hook tất cả trừ GUI hệ thống Roblox)
--- =========================================================
-local translating = false
+-- ✅ THROTTLE: mỗi object chỉ được dịch tối đa 1 lần/0.5 giây
+local THROTTLE_TIME = 0.5
 
 -- Danh sách GUI hệ thống cần BỎ QUA (không dịch)
 local IGNORE_GUI_NAMES = {
@@ -387,35 +363,64 @@ local function hookObject(obj)
     if obj:GetAttribute("ChilliHooked") then return end
     obj:SetAttribute("ChilliHooked", true)
     
+    local lastOriginal = nil
+    local lastTranslateTime = 0
+    
     local function apply()
         if translating then return end
-        translating = true
         
         local ok, cur = pcall(function() return obj.Text end)
-        if ok and type(cur) == "string" and cur ~= "" then
-            local new = translateText(cur)
-            if new ~= cur then
-                pcall(function() obj.Text = new end)
-            end
-        end
+        if not ok or type(cur) ~= "string" or cur == "" then return end
         
-        if obj:IsA("TextBox") then
-            local ok2, ph = pcall(function() return obj.PlaceholderText end)
-            if ok2 and type(ph) == "string" and ph ~= "" then
-                local new = translateText(ph)
-                if new ~= ph then
-                    pcall(function() obj.PlaceholderText = new end)
+        -- Nếu text không đổi so với lần trước → bỏ qua
+        if cur == lastOriginal then return end
+        
+        -- THROTTLE: chỉ dịch nếu đã qua 0.5s kể từ lần dịch cuối
+        local now = tick()
+        if now - lastTranslateTime < THROTTLE_TIME then
+            task.delay(THROTTLE_TIME - (now - lastTranslateTime), function()
+                if obj.Parent then
+                    lastOriginal = nil -- Reset để trigger lại
+                    apply()
                 end
-            end
+            end)
+            return
         end
         
+        lastTranslateTime = now
+        lastOriginal = cur
+        
+        translating = true
+        local new = translateText(cur)
+        if new ~= cur then
+            pcall(function() obj.Text = new end)
+            lastOriginal = new -- Lưu text đã dịch để tránh re-trigger
+        end
         translating = false
     end
     
-    apply()
-    obj:GetPropertyChangedSignal("Text"):Connect(apply)
+    -- Chạy lần đầu
+    task.defer(apply)
+    
+    obj:GetPropertyChangedSignal("Text"):Connect(function()
+        task.defer(apply)
+    end)
+    
     if obj:IsA("TextBox") then
-        obj:GetPropertyChangedSignal("PlaceholderText"):Connect(apply)
+        obj:GetPropertyChangedSignal("PlaceholderText"):Connect(function()
+            task.defer(function()
+                if translating then return end
+                translating = true
+                local ok, ph = pcall(function() return obj.PlaceholderText end)
+                if ok and type(ph) == "string" and ph ~= "" then
+                    local new = translateText(ph)
+                    if new ~= ph then
+                        pcall(function() obj.PlaceholderText = new end)
+                    end
+                end
+                translating = false
+            end)
+        end)
     end
 end
 
@@ -423,10 +428,11 @@ local function watchGui(gui)
     if not gui:IsA("ScreenGui") then return end
     if IGNORE_GUI_NAMES[gui.Name] then return end
     
+    -- Hook theo batch nhỏ để không block
     local descendants = gui:GetDescendants()
     for i, d in ipairs(descendants) do
         hookObject(d)
-        if i % 30 == 0 then task.wait() end
+        if i % 20 == 0 then task.wait() end
     end
     
     gui.DescendantAdded:Connect(function(d)
@@ -461,8 +467,9 @@ local function startWatching()
         end
     end
 end
+
 -- =========================================================
--- TẢI SCRIPT
+-- HÀM TẢI SCRIPT
 -- =========================================================
 local function fetchScript(url)
     local ok, res = pcall(function() return game:HttpGet(url) end)
@@ -602,10 +609,10 @@ local function run(lang)
             translating = true -- Khóa dịch khi chọn EN
         end
         
-        -- ✅ Chạy script chính trong coroutine riêng
+        -- Chạy script chính trong coroutine riêng
         task.spawn(fn)
         
-        -- ✅ Bắt đầu watcher SAU KHI script chính chạy
+        -- Bắt đầu watcher SAU KHI script chính chạy
         if lang == "vi" then
             task.spawn(startWatching)
         end
