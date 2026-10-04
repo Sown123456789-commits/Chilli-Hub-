@@ -1,17 +1,16 @@
 -- =========================================================
 -- LANGUAGE SELECTOR + RUNTIME GUI TRANSLATOR (EN -> VI)
 -- Hook GUI, dịch realtime mọi TextLabel/TextButton/TextBox
--- Đã tích hợp từ điển từ Chilli Hub Translator V10.4
+-- Dữ liệu dịch được chuyển từ Chilli Hub Translator V10.4
 -- =========================================================
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
 
 local SCRIPT_URL = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"
 
 -- =========================================================
--- TỪ ĐIỂN VIỆT HÓA (Từ V10.4)
+-- TỪ ĐIỂN VIỆT HÓA (Chuyển từ V10.4)
 -- =========================================================
 local MAP_VI = {
     -- Các Tab Chính
@@ -27,8 +26,8 @@ local MAP_VI = {
     ["Quick & Keys"] = "Phím Tắt",
     ["Settings"] = "Cài Đặt",
     ["Config"] = "Cấu Hình",
-    
-    -- === DR SCRAMBLE EVENT ===
+
+    -- Dr Scramble Event
     ["Dr Scramble Event"] = "Sự Kiện Dr Scramble",
     ["Auto Hunt Drones"] = "Tự Động Săn Drone",
     ["Kill drones during outbreaks for Samples and Drone Parts"] = "Tiêu diệt drone khi bùng phát để lấy Mẫu Vật và Phụ Tùng",
@@ -48,7 +47,7 @@ local MAP_VI = {
     ["Scramble Shop Items"] = "Vật Phẩm Cửa Hàng Scramble",
     ["Keep Samples"] = "Giữ Lại Mẫu Vật (Không mua hết)",
     ["Go To Secret Cave"] = "Đi Đến Hang Động Bí Ẩn (Secret)",
-    
+
     -- Dr Scramble Mech & Scrambled Mutation
     ["Dr Scramble Mech"] = "Mech Dr Scramble",
     ["Dr Scramble Mech (New)"] = "Mech Dr Scramble (Mới)",
@@ -119,7 +118,7 @@ local MAP_VI = {
     ["rotates in 38:45"] = "đổi sau 38:45",
     ["Không Chọn"] = "Không Chọn",
 
-    -- Các menu điều hướng
+    -- Menu điều hướng
     ["Farm Tab > Auto Steal"] = "Tab Cày Cuốc > Tự Động Cướp",
     ["Farm Tab > Auto Place Egg"] = "Tab Cày Cuốc > Tự Đặt Trứng",
     ["Farm Tab > Auto Treadmill"] = "Tab Cày Cuốc > Tự Chạy Máy Tập",
@@ -149,7 +148,7 @@ local MAP_VI = {
     ["Config Tab > Profiles"] = "Tab Cấu Hình > Hồ Sơ",
     ["Config Tab > Import/Export"] = "Tab Cấu Hình > Nhập/Xuất",
 
-    -- Các tính năng
+    -- Tính năng
     ["Auto Steal"] = "Tự Động Cướp",
     ["Target Areas"] = "Khu Vực Mục Tiêu",
     ["Min Rarity"] = "Độ Hiếm Tối Thiểu",
@@ -399,7 +398,7 @@ local MAP_VI = {
 }
 
 -- =========================================================
--- REGEX XỬ LÝ CHUỖI ĐỘNG
+-- REGEX XỬ LÝ CHUỖI ĐỘNG (Chuyển từ V10.4)
 -- =========================================================
 local DYNAMIC_PATTERNS = {
     { 
@@ -505,7 +504,7 @@ local DYNAMIC_PATTERNS = {
 }
 
 -- =========================================================
--- HÀM DỊCH (khớp cả nguyên câu và từng cụm có biên từ)
+-- HÀM DỊCH (từ V10.4, chuyển sang dùng cho script mới)
 -- =========================================================
 local sortedKeys = {}
 for k in pairs(MAP_VI) do
@@ -525,21 +524,20 @@ local function safeReplace(str, findStr, replaceStr)
     return str
 end
 
-local translateText = function(text, lang)
+local translateText = function(text)
     if type(text) ~= "string" or text == "" then return text end
-    if lang == "en" then return text end
-
+    
     -- Check exact match
     if MAP_VI[text] then return MAP_VI[text] end
-
+    
     -- Check dynamic patterns
     for _, item in ipairs(DYNAMIC_PATTERNS) do
         local matches = {text:match(item.pattern)}
         if #matches > 0 then
-            return item.format(lang, unpack(matches))
+            return item.format("VI", unpack(matches))
         end
     end
-
+    
     -- Fallback: replace known phrases (longest first)
     local out = text
     for _, en in ipairs(sortedKeys) do
@@ -551,21 +549,20 @@ local translateText = function(text, lang)
 end
 
 -- =========================================================
--- HOOK GUI OBJECT
+-- HOOK GUI (giữ nguyên logic script mới)
 -- =========================================================
 local translating = false
-local currentLanguage = "vi" -- Default
 
 local function hookObject(obj)
     if not (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) then return end
     
     local function apply()
-        if translating or currentLanguage == "en" then return end
+        if translating then return end
         translating = true
         
         local ok, cur = pcall(function() return obj.Text end)
         if ok and type(cur) == "string" then
-            local new = translateText(cur, currentLanguage)
+            local new = translateText(cur)
             if new ~= cur then
                 pcall(function() obj.Text = new end)
             end
@@ -575,7 +572,7 @@ local function hookObject(obj)
         if obj:IsA("TextBox") then
             local ok2, ph = pcall(function() return obj.PlaceholderText end)
             if ok2 and type(ph) == "string" and ph ~= "" then
-                local new = translateText(ph, currentLanguage)
+                local new = translateText(ph)
                 if new ~= ph then
                     pcall(function() obj.PlaceholderText = new end)
                 end
@@ -629,7 +626,7 @@ for _, cont in ipairs(containers) do
 end
 
 -- =========================================================
--- HÀM TẢI SCRIPT
+-- HÀM TẢI SCRIPT (giữ nguyên logic script mới)
 -- =========================================================
 local function fetchScript(url)
     local ok, res = pcall(function() return game:HttpGet(url) end)
@@ -648,7 +645,7 @@ local function fetchScript(url)
 end
 
 -- =========================================================
--- UI CHỌN NGÔN NGỮ
+-- UI CHỌN NGÔN NGỮ (giữ nguyên logic script mới)
 -- =========================================================
 local gui = Instance.new("ScreenGui")
 gui.Name = "LangSelector"
@@ -738,13 +735,12 @@ status.Font = Enum.Font.Gotham
 status.TextSize = 12
 
 -- =========================================================
--- CHẠY
+-- CHẠY (giữ nguyên logic script mới)
 -- =========================================================
 local loading = false
 local function run(lang)
     if loading then return end
     loading = true
-    currentLanguage = lang
     
     status.Text = (lang == "vi") and "Đang tải script..." or "Loading script..."
     btnVI:Destroy()
@@ -767,6 +763,11 @@ local function run(lang)
         if not fn then
             warn("[LangSel] loadstring error: " .. tostring(err))
             return
+        end
+        
+        -- Nếu chọn English => tạm tắt hook dịch
+        if lang == "en" then
+            translating = true -- khóa vĩnh viễn apply()
         end
         
         local ok, err2 = pcall(fn)
