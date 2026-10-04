@@ -1,48 +1,42 @@
 -- =========================================================
---  LANGUAGE SELECTOR + RUNTIME GUI TRANSLATOR (EN -> VI)
---  Hook GUI, dịch realtime mọi TextLabel/TextButton/TextBox
+-- LANGUAGE SELECTOR + RUNTIME GUI TRANSLATOR (EN -> VI) V10.5
+-- TỐI ƯU: Cache dịch, chỉ hook GUI Chilli Hub, không hook CoreGui
 -- =========================================================
+local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
+local RunService = game:GetService("RunService")
 
-local Players     = game:GetService("Players")
-local CoreGui     = game:GetService("CoreGui")
-local RunService  = game:GetService("RunService")
-
-local SCRIPT_URL  = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"
+local SCRIPT_URL = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"
 
 -- =========================================================
---  TỪ ĐIỂN (bổ sung thoải mái, KEY phải khớp CHÍNH XÁC hoặc là 1 phần trong câu)
+-- TỪ ĐIỂN (giữ nguyên)
 -- =========================================================
 local DICT = {
-    ["Main"]="Chính", ["Home"]="Trang chủ", ["Player"]="Người chơi",
-    ["Players"]="Người chơi", ["Visuals"]="Hình ảnh", ["Visual"]="Hình ảnh",
-    ["Combat"]="Chiến đấu", ["Misc"]="Khác", ["Miscellaneous"]="Khác",
-    ["Settings"]="Cài đặt", ["Setting"]="Cài đặt", ["Config"]="Cấu hình",
-    ["Configs"]="Cấu hình", ["Scripts"]="Kịch bản", ["Script"]="Kịch bản",
+    -- Tab chính
+    ["Main"]="Chính", ["Home"]="Trang chủ", ["Player"]="Người chơi", ["Players"]="Người chơi",
+    ["Visuals"]="Hình ảnh", ["Combat"]="Chiến đấu", ["Misc"]="Khác",
+    ["Settings"]="Cài đặt", ["Config"]="Cấu hình", ["Scripts"]="Kịch bản",
     ["Teleport"]="Dịch chuyển", ["Movement"]="Di chuyển", ["World"]="Thế giới",
-    ["Local"]="Cục bộ", ["Character"]="Nhân vật", ["Extra"]="Bổ sung",
-    ["Utility"]="Tiện ích", ["Utilities"]="Tiện ích", ["Others"]="Khác",
-    ["Fun"]="Giải trí", ["Shop"]="Cửa hàng", ["Trade"]="Giao dịch",
-    ["Toggle"]="Bật/Tắt", ["Enable"]="Bật", ["Disable"]="Tắt",
-    ["Enabled"]="Đã bật", ["Disabled"]="Đã tắt", ["On"]="Bật", ["Off"]="Tắt",
-    ["Close"]="Đóng", ["Open"]="Mở", ["Confirm"]="Xác nhận", ["Cancel"]="Huỷ",
-    ["Apply"]="Áp dụng", ["Reset"]="Đặt lại", ["Save"]="Lưu", ["Load"]="Tải",
-    ["Select"]="Chọn", ["Copy"]="Sao chép", ["Execute"]="Thực thi",
-    ["Start"]="Bắt đầu", ["Stop"]="Dừng", ["Refresh"]="Làm mới",
-    ["Search"]="Tìm kiếm", ["Filter"]="Lọc", ["Sort"]="Sắp xếp",
-    ["Speed"]="Tốc độ", ["Jump"]="Nhảy", ["Fly"]="Bay",
-    ["Walk Speed"]="Tốc độ đi", ["Jump Power"]="Lực nhảy",
-    ["God Mode"]="Bất tử", ["Infinite"]="Vô hạn", ["Health"]="Máu",
-    ["Ammo"]="Đạn", ["Kill"]="Giết", ["Kill All"]="Giết tất cả",
+    ["Character"]="Nhân vật", ["Utility"]="Tiện ích", ["Others"]="Khác",
+    ["Shop"]="Cửa hàng", ["Trade"]="Giao dịch", ["Toggle"]="Bật/Tắt",
+    ["Enable"]="Bật", ["Disable"]="Tắt", ["Enabled"]="Đã bật", ["Disabled"]="Đã tắt",
+    ["On"]="Bật", ["Off"]="Tắt", ["Close"]="Đóng", ["Open"]="Mở",
+    ["Confirm"]="Xác nhận", ["Cancel"]="Huỷ", ["Apply"]="Áp dụng",
+    ["Reset"]="Đặt lại", ["Save"]="Lưu", ["Load"]="Tải", ["Select"]="Chọn",
+    ["Copy"]="Sao chép", ["Execute"]="Thực thi", ["Start"]="Bắt đầu",
+    ["Stop"]="Dừng", ["Refresh"]="Làm mới", ["Search"]="Tìm kiếm",
+    ["Filter"]="Lọc", ["Sort"]="Sắp xếp", ["Speed"]="Tốc độ",
+    ["Jump"]="Nhảy", ["Fly"]="Bay", ["Walk Speed"]="Tốc độ đi",
+    ["Jump Power"]="Lực nhảy", ["God Mode"]="Bất tử", ["Infinite"]="Vô hạn",
+    ["Health"]="Máu", ["Ammo"]="Đạn", ["Kill"]="Giết", ["Kill All"]="Giết tất cả",
     ["Aimbot"]="Ngắm tự động", ["Wallhack"]="Xuyên tường",
     ["Auto Farm"]="Tự động cày", ["Auto"]="Tự động", ["Farm"]="Cày",
-    ["Noclip"]="Xuyên vật thể", ["Anti Ban"]="Chống ban",
-    ["Anti AFK"]="Chống AFK", ["Full Bright"]="Ánh sáng đầy",
-    ["No Fog"]="Không sương mù", ["FOV"]="Tầm nhìn",
-    ["Hitbox"]="Vùng va chạm", ["Invisible"]="Tàng hình",
-    ["Damage"]="Sát thương", ["Range"]="Phạm vi", ["Radius"]="Bán kính",
-    ["Amount"]="Số lượng", ["Value"]="Giá trị", ["Time"]="Thời gian",
-    ["Delay"]="Độ trễ", ["Cooldown"]="Hồi chiêu",
-    ["Loading"]="Đang tải", ["Loaded"]="Đã tải",
+    ["Noclip"]="Xuyên vật thể", ["Anti Ban"]="Chống ban", ["Anti AFK"]="Chống AFK",
+    ["Full Bright"]="Ánh sáng đầy", ["No Fog"]="Không sương mù", ["FOV"]="Tầm nhìn",
+    ["Hitbox"]="Vùng va chạm", ["Invisible"]="Tàng hình", ["Damage"]="Sát thương",
+    ["Range"]="Phạm vi", ["Radius"]="Bán kính", ["Amount"]="Số lượng",
+    ["Value"]="Giá trị", ["Time"]="Thời gian", ["Delay"]="Độ trễ",
+    ["Cooldown"]="Hồi chiêu", ["Loading"]="Đang tải", ["Loaded"]="Đã tải",
     ["Please wait"]="Vui lòng đợi", ["Error"]="Lỗi", ["Success"]="Thành công",
     ["Failed"]="Thất bại", ["Warning"]="Cảnh báo", ["Notice"]="Thông báo",
     ["Language"]="Ngôn ngữ", ["Vietnamese"]="Tiếng Việt", ["English"]="Tiếng Anh",
@@ -278,61 +272,90 @@ local DICT = {
 }
 
 -- =========================================================
---  HÀM DỊCH (khớp cả nguyên câu và từng cụm có biên từ)
+-- CACHE DỊCH (TỐI ƯU SIÊU NHANH)
 -- =========================================================
 local sortedKeys = {}
 for k in pairs(DICT) do table.insert(sortedKeys, k) end
--- dài trước để "Walk Speed" thay trước "Speed"
 table.sort(sortedKeys, function(a,b) return #a > #b end)
 
 local escapePattern = function(s)
     return (s:gsub("([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1"))
 end
 
-local translateText = function(text)
-    if type(text) ~= "string" or text == "" then return text end
-    if DICT[text] then return DICT[text] end
+-- ✅ CACHE: text đã dịch rồi → trả về ngay, không quét lại
+local translateCache = {}
 
+local function translateText(text)
+    if type(text) ~= "string" or text == "" then return text end
+    
+    -- Cache hit → trả về ngay (cực nhanh)
+    local cached = translateCache[text]
+    if cached ~= nil then return cached end
+    
+    -- Exact match
+    local result = DICT[text]
+    if result then
+        translateCache[text] = result
+        return result
+    end
+    
+    -- ✅ BỎ QUA text thuần số/ký tự đặc biệt (không cần dịch)
+    if text:match("^[%d%p%s]+$") then
+        translateCache[text] = text
+        return text
+    end
+    
+    -- Fallback gsub
     local out = text
     for _, en in ipairs(sortedKeys) do
-        local vi   = DICT[en]
-        local pat  = "%f[%w]" .. escapePattern(en) .. "%f[%W]"
-        out = out:gsub(pat, vi)
+        local vi = DICT[en]
+        if vi ~= en then
+            local pat = "%f[%w]" .. escapePattern(en) .. "%f[%W]"
+            out = out:gsub(pat, vi)
+        end
     end
+    
+    translateCache[text] = out
     return out
 end
 
 -- =========================================================
---  HOOK 1 OBJECT GUI
+-- HOOK GUI (CHỈ HOOK CHILLI HUB, KHÔNG HOOK COREGUI)
 -- =========================================================
-local translating = false   -- tránh đệ quy
+local translating = false
+local hookedCount = 0
 
 local function hookObject(obj)
-    if not (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) then
-        return
-    end
-
+    if not (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) then return end
+    if obj:GetAttribute("ChilliHooked") then return end
+    obj:SetAttribute("ChilliHooked", true)
+    hookedCount = hookedCount + 1
+    
     local function apply()
         if translating then return end
         translating = true
+        
         local ok, cur = pcall(function() return obj.Text end)
-        if ok and type(cur) == "string" then
+        if ok and type(cur) == "string" and cur ~= "" then
             local new = translateText(cur)
             if new ~= cur then
                 pcall(function() obj.Text = new end)
             end
         end
-        -- PlaceholderText cho TextBox
+        
         if obj:IsA("TextBox") then
             local ok2, ph = pcall(function() return obj.PlaceholderText end)
             if ok2 and type(ph) == "string" and ph ~= "" then
                 local new = translateText(ph)
-                if new ~= ph then pcall(function() obj.PlaceholderText = new end) end
+                if new ~= ph then
+                    pcall(function() obj.PlaceholderText = new end)
+                end
             end
         end
+        
         translating = false
     end
-
+    
     apply()
     obj:GetPropertyChangedSignal("Text"):Connect(apply)
     if obj:IsA("TextBox") then
@@ -340,57 +363,88 @@ local function hookObject(obj)
     end
 end
 
--- Theo dõi 1 ScreenGui bất kỳ
+-- ✅ CHỈ hook GUI của Chilli Hub (dựa vào tên ScreenGui đặc trưng)
 local function watchGui(gui)
-    if not gui:IsA("ScreenGui") and not gui:IsA("GuiObject") then return end
-    for _, d in ipairs(gui:GetDescendants()) do hookObject(d) end
+    if not gui:IsA("ScreenGui") then return end
+    
+    -- Bỏ qua GUI của chính LangSelector
+    if gui.Name == "LangSelector" then return end
+    
+    -- ✅ Chỉ hook các ScreenGui có tên liên quan đến Chilli Hub
+    local nameLower = gui.Name:lower()
+    if not (nameLower:find("chilli") or nameLower:find("hub") or 
+            nameLower:find("steal") or nameLower:find("egg") or
+            nameLower:find("script") or nameLower:find("main")) then
+        return
+    end
+    
+    -- Hook descendants (chia batch để không block)
+    local descendants = gui:GetDescendants()
+    for i, d in ipairs(descendants) do
+        hookObject(d)
+        if i % 30 == 0 then
+            task.wait() -- Nhường luồng mỗi 30 objects
+        end
+    end
+    
+    -- Hook objects mới thêm vào
     gui.DescendantAdded:Connect(function(d)
         task.defer(hookObject, d)
     end)
 end
 
 -- =========================================================
---  HOOK MỌI CONTAINER (CoreGui / PlayerGui / gethui nếu có)
+-- CHỜ CHILLI HUB LOAD XONG RỒI MỚI HOOK
 -- =========================================================
-local containers = { CoreGui, Players.LocalPlayer:WaitForChild("PlayerGui") }
-if gethui then
-    local ok, h = pcall(gethui)
-    if ok and h then table.insert(containers, h) end
-end
-
-for _, cont in ipairs(containers) do
-    if cont then
-        for _, d in ipairs(cont:GetDescendants()) do
-            if d:IsA("ScreenGui") or d:IsA("GuiObject") then watchGui(d) end
-        end
-        cont.DescendantAdded:Connect(function(d)
-            if d:IsA("ScreenGui") then
-                task.defer(watchGui, d)
-            elseif d:IsA("GuiObject") then
-                task.defer(hookObject, d)
+local function startWatching()
+    -- Đợi 3s cho Chilli Hub load
+    task.wait(3)
+    
+    local targets = {
+        CoreGui,
+        Players.LocalPlayer:WaitForChild("PlayerGui")
+    }
+    
+    for _, container in ipairs(targets) do
+        if container then
+            -- Quét ScreenGui hiện có
+            for _, gui in ipairs(container:GetChildren()) do
+                if gui:IsA("ScreenGui") then
+                    task.spawn(function() watchGui(gui) end)
+                end
             end
-        end)
+            
+            -- Lắng nghe ScreenGui mới
+            container.DescendantAdded:Connect(function(d)
+                if d:IsA("ScreenGui") then
+                    task.defer(function() watchGui(d) end)
+                end
+            end)
+        end
     end
 end
 
 -- =========================================================
---  HÀM TẢI SCRIPT
+-- TẢI SCRIPT
 -- =========================================================
 local function fetchScript(url)
     local ok, res = pcall(function() return game:HttpGet(url) end)
     if ok and type(res) == "string" and #res > 0 then return res end
+    
     for _, name in ipairs({"request","http_request","syn_request"}) do
         local fn = _G[name]
         if type(fn) == "function" then
             local ok2, r = pcall(fn, {Url = url, Method = "GET"})
-            if ok2 and r and r.Body and #r.Body > 0 then return r.Body end
+            if ok2 and r and r.Body and #r.Body > 0 then
+                return r.Body
+            end
         end
     end
     return nil
 end
 
 -- =========================================================
---  UI CHỌN NGÔN NGỮ
+-- UI CHỌN NGÔN NGỮ
 -- =========================================================
 local gui = Instance.new("ScreenGui")
 gui.Name = "LangSelector"
@@ -411,30 +465,27 @@ frame.BorderSizePixel = 0
 frame.Active = true
 frame.Parent = gui
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 12)
+
 local stroke = Instance.new("UIStroke", frame)
 stroke.Color = Color3.fromRGB(85, 85, 110)
 
--- Kéo thả
-do
-    local dragging, dragStart, startPos
-    frame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true; dragStart = input.Position; startPos = frame.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then dragging = false end
-            end)
-        end
-    end)
-    frame.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement
-        or input.UserInputType == Enum.UserInputType.Touch) then
-            local d = input.Position - dragStart
-            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X,
-                                       startPos.Y.Scale, startPos.Y.Offset + d.Y)
-        end
-    end)
-end
+local dragging, dragStart, startPos
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+frame.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local d = input.Position - dragStart
+        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
+    end
+end)
 
 local title = Instance.new("TextLabel", frame)
 title.Size = UDim2.new(1, 0, 0, 55)
@@ -467,8 +518,8 @@ local function makeBtn(text, color)
     return b
 end
 
-local btnVI = makeBtn("🇻🇳  Tiếng Việt", Color3.fromRGB(200, 40, 40))
-local btnEN = makeBtn("🇺🇸  English",    Color3.fromRGB(40, 90, 200))
+local btnVI = makeBtn("🇻🇳 Tiếng Việt", Color3.fromRGB(200, 40, 40))
+local btnEN = makeBtn("🇺🇸 English", Color3.fromRGB(40, 90, 200))
 
 local status = Instance.new("TextLabel", frame)
 status.Size = UDim2.new(1, -40, 0, 26)
@@ -480,43 +531,47 @@ status.Font = Enum.Font.Gotham
 status.TextSize = 12
 
 -- =========================================================
---  CHẠY
+-- CHẠY
 -- =========================================================
 local loading = false
-
 local function run(lang)
     if loading then return end
     loading = true
-
+    
     status.Text = (lang == "vi") and "Đang tải script..." or "Loading script..."
-    btnVI:Destroy(); btnEN:Destroy()
-
+    btnVI:Destroy()
+    btnEN:Destroy()
+    
     task.spawn(function()
         local src = fetchScript(SCRIPT_URL)
         if not src then
-            status.Text = (lang == "vi") and "❌ Không tải được script!" or "❌ Failed to fetch script!"
+            status.Text = (lang == "vi") and "❌ Không tải được script!" or "❌ Failed!"
             loading = false
             return
         end
-
-        status.Text = (lang == "vi") and "▶️ Đang chạy + dịch..." or "▶️ Running..."
+        
+        status.Text = (lang == "vi") and "▶️ Đang chạy..." or "▶️ Running..."
         task.wait(0.3)
         gui:Destroy()
-
+        
         local loader = loadstring or load
         local fn, err = loader(src)
         if not fn then
             warn("[LangSel] loadstring error: " .. tostring(err))
             return
         end
-
-        -- Nếu chọn English => tạm tắt hook dịch
+        
         if lang == "en" then
-            translating = true   -- khoá vĩnh viễn apply()
+            translating = true -- Khóa dịch khi chọn EN
         end
-
-        local ok, err2 = pcall(fn)
-        if not ok then warn("[LangSel] runtime error: " .. tostring(err2)) end
+        
+        -- ✅ Chạy script chính trong coroutine riêng
+        task.spawn(fn)
+        
+        -- ✅ Bắt đầu watcher SAU KHI script chính chạy
+        if lang == "vi" then
+            task.spawn(startWatching)
+        end
     end)
 end
 
