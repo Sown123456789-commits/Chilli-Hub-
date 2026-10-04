@@ -1,7 +1,6 @@
 -- =========================================================
--- CHILLI HUB TRANSLATOR V10.7 (EN <-> VI)
--- Tối ưu: Throttle 0.5s, Cache dịch, Skip text động, Batch hook
--- Đã sửa: Đứng cứng, lag, dựt khi mở Chilli Hub
+-- CHILLI HUB TRANSLATOR V10.8 (POLLING-BASED - CHỐNG LAG)
+-- Không hook GetPropertyChangedSignal → dùng polling 0.5s
 -- =========================================================
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
@@ -273,7 +272,7 @@ local DICT = {
 }
 
 -- =========================================================
--- HÀM DỊCH (TỐI ƯU - CACHE + SKIP TEXT ĐỘNG)
+-- HÀM DỊCH (CACHE + SKIP TEXT ĐỘNG)
 -- =========================================================
 local sortedKeys = {}
 for k in pairs(DICT) do table.insert(sortedKeys, k) end
@@ -285,14 +284,13 @@ end
 
 local translateCache = {}
 
--- ✅ Các pattern text ĐỘNG cần BỎ QUA (không dịch để tránh lag)
 local SKIP_PATTERNS = {
-    "^[%d%p%s]+$",              -- Chỉ có số/ký tự đặc biệt (0, 2:59, 0/100)
-    "^%$[%d%.]+[KMBT]?$",       -- $227M, $189M
-    "^%d+[KMBT]?$",             -- 250, 3K, 5M
-    "^[+%-]%$[%d%.]+[KMBT]?$",  -- +$278M, -$100K
-    "^%d+%.%d+s$",              -- 0.30s, 0.40s
-    "^%d+/%d+$",                -- 0/100, 1/3
+    "^[%d%p%s]+$",
+    "^%$[%d%.]+[KMBT]?$",
+    "^%d+[KMBT]?$",
+    "^[+%-]%$[%d%.]+[KMBT]?$",
+    "^%d+%.%d+s$",
+    "^%d+/%d+$",
 }
 
 local function shouldSkip(text)
@@ -305,24 +303,20 @@ end
 local function translateText(text)
     if type(text) ~= "string" or text == "" then return text end
     
-    -- Cache hit → trả về ngay
     local cached = translateCache[text]
     if cached ~= nil then return cached end
     
-    -- Exact match
     local result = DICT[text]
     if result then
         translateCache[text] = result
         return result
     end
     
-    -- ✅ Bỏ qua text động (số, tiền, %, thời gian)
     if shouldSkip(text) then
         translateCache[text] = text
         return text
     end
     
-    -- Fallback gsub (chỉ chạy khi text thực sự cần dịch)
     local out = text
     for _, en in ipairs(sortedKeys) do
         local vi = DICT[en]
@@ -337,111 +331,83 @@ local function translateText(text)
 end
 
 -- =========================================================
--- HOOK GUI (CÓ THROTTLE, CHỐNG DỰT)
+-- POLLING ENGINE (KHÔNG HOOK GetPropertyChangedSignal)
 -- =========================================================
 local translating = false
+local trackedObjects = {} -- {obj = <GuiObject>, lastText = <string>}
 
--- ✅ THROTTLE: mỗi object chỉ được dịch tối đa 1 lần/0.5 giây
-local THROTTLE_TIME = 0.5
-
--- Danh sách GUI hệ thống cần BỎ QUA (không dịch)
 local IGNORE_GUI_NAMES = {
-    ["Chat"] = true,
-    ["Backpack"] = true,
-    ["PlayerList"] = true,
-    ["BubbleChat"] = true,
-    ["TouchGui"] = true,
-    ["TouchControlFrame"] = true,
-    ["ControlFrame"] = true,
-    ["Topbar"] = true,
-    ["StarterGui"] = true,
+    ["Chat"] = true, ["Backpack"] = true, ["PlayerList"] = true,
+    ["BubbleChat"] = true, ["TouchGui"] = true, ["TouchControlFrame"] = true,
+    ["ControlFrame"] = true, ["Topbar"] = true, ["StarterGui"] = true,
     ["LangSelector"] = true,
 }
 
-local function hookObject(obj)
+-- Đăng ký object vào danh sách theo dõi (KHÔNG hook event)
+local function registerObject(obj)
     if not (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) then return end
-    if obj:GetAttribute("ChilliHooked") then return end
-    obj:SetAttribute("ChilliHooked", true)
+    if obj:GetAttribute("ChilliTracked") then return end
+    obj:SetAttribute("ChilliTracked", true)
     
-    local lastOriginal = nil
-    local lastTranslateTime = 0
-    
-    local function apply()
-        if translating then return end
-        
-        local ok, cur = pcall(function() return obj.Text end)
-        if not ok or type(cur) ~= "string" or cur == "" then return end
-        
-        -- Nếu text không đổi so với lần trước → bỏ qua
-        if cur == lastOriginal then return end
-        
-        -- THROTTLE: chỉ dịch nếu đã qua 0.5s kể từ lần dịch cuối
-        local now = tick()
-        if now - lastTranslateTime < THROTTLE_TIME then
-            task.delay(THROTTLE_TIME - (now - lastTranslateTime), function()
-                if obj.Parent then
-                    lastOriginal = nil -- Reset để trigger lại
-                    apply()
-                end
-            end)
-            return
-        end
-        
-        lastTranslateTime = now
-        lastOriginal = cur
-        
-        translating = true
-        local new = translateText(cur)
-        if new ~= cur then
-            pcall(function() obj.Text = new end)
-            lastOriginal = new -- Lưu text đã dịch để tránh re-trigger
-        end
-        translating = false
-    end
-    
-    -- Chạy lần đầu
-    task.defer(apply)
-    
-    obj:GetPropertyChangedSignal("Text"):Connect(function()
-        task.defer(apply)
-    end)
-    
-    if obj:IsA("TextBox") then
-        obj:GetPropertyChangedSignal("PlaceholderText"):Connect(function()
-            task.defer(function()
-                if translating then return end
-                translating = true
-                local ok, ph = pcall(function() return obj.PlaceholderText end)
-                if ok and type(ph) == "string" and ph ~= "" then
-                    local new = translateText(ph)
-                    if new ~= ph then
-                        pcall(function() obj.PlaceholderText = new end)
-                    end
-                end
-                translating = false
-            end)
-        end)
-    end
+    table.insert(trackedObjects, {
+        obj = obj,
+        lastText = nil, -- Chưa dịch lần nào
+    })
 end
 
-local function watchGui(gui)
+-- Quét 1 GUI, đăng ký tất cả descendants
+local function scanGui(gui)
     if not gui:IsA("ScreenGui") then return end
     if IGNORE_GUI_NAMES[gui.Name] then return end
     
-    -- Hook theo batch nhỏ để không block
     local descendants = gui:GetDescendants()
     for i, d in ipairs(descendants) do
-        hookObject(d)
-        if i % 20 == 0 then task.wait() end
+        registerObject(d)
+        if i % 30 == 0 then task.wait() end
     end
-    
-    gui.DescendantAdded:Connect(function(d)
-        task.defer(hookObject, d)
-    end)
 end
 
 -- =========================================================
--- WATCHER: Chờ Chilli Hub load rồi hook tất cả GUI (trừ hệ thống)
+-- VÒNG LẶP POLLING: quét toàn bộ object đã đăng ký
+-- =========================================================
+local POLL_INTERVAL = 0.5 -- Quét mỗi 0.5 giây
+
+local function pollingLoop()
+    while true do
+        task.wait(POLL_INTERVAL)
+        
+        if translating then continue end
+        translating = true
+        
+        -- Duyệt ngược để xóa object đã bị destroy
+        for i = #trackedObjects, 1, -1 do
+            local entry = trackedObjects[i]
+            local obj = entry.obj
+            
+            if not obj or not obj.Parent then
+                table.remove(trackedObjects, i)
+                continue
+            end
+            
+            -- Đọc text hiện tại
+            local ok, cur = pcall(function() return obj.Text end)
+            if ok and type(cur) == "string" and cur ~= "" and cur ~= entry.lastText then
+                local new = translateText(cur)
+                if new ~= cur then
+                    pcall(function() obj.Text = new end)
+                    entry.lastText = new
+                else
+                    entry.lastText = cur
+                end
+            end
+        end
+        
+        translating = false
+    end
+end
+
+-- =========================================================
+-- WATCHER: Chờ Chilli Hub load rồi quét tất cả GUI
 -- =========================================================
 local function startWatching()
     task.wait(3) -- Chờ Chilli Hub load xong
@@ -453,15 +419,19 @@ local function startWatching()
     
     for _, container in ipairs(targets) do
         if container then
+            -- Quét GUI hiện có
             for _, gui in ipairs(container:GetChildren()) do
                 if gui:IsA("ScreenGui") and not IGNORE_GUI_NAMES[gui.Name] then
-                    task.spawn(function() watchGui(gui) end)
+                    task.spawn(function() scanGui(gui) end)
                 end
             end
             
+            -- Lắng nghe ScreenGui mới
             container.DescendantAdded:Connect(function(d)
                 if d:IsA("ScreenGui") and not IGNORE_GUI_NAMES[d.Name] then
-                    task.defer(function() watchGui(d) end)
+                    task.defer(function() scanGui(d) end)
+                elseif d:IsA("GuiObject") and d:IsA("TextLabel") or d:IsA("TextButton") or d:IsA("TextBox") then
+                    task.defer(function() registerObject(d) end)
                 end
             end)
         end
@@ -605,17 +575,16 @@ local function run(lang)
             return
         end
         
-        if lang == "en" then
-            translating = true -- Khóa dịch khi chọn EN
-        end
-        
         -- Chạy script chính trong coroutine riêng
         task.spawn(fn)
         
-        -- Bắt đầu watcher SAU KHI script chính chạy
         if lang == "vi" then
+            -- Bắt đầu watcher (đăng ký object, không hook event)
             task.spawn(startWatching)
+            -- Bắt đầu vòng lặp polling (1 vòng duy nhất cho toàn bộ)
+            task.spawn(pollingLoop)
         end
+        -- Nếu chọn EN: không chạy watcher/polling → text giữ nguyên tiếng Anh
     end)
 end
 
