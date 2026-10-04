@@ -1,7 +1,7 @@
 -- =========================================================
 -- LANGUAGE SELECTOR + RUNTIME GUI TRANSLATOR (EN -> VI)
 -- Hook GUI, dịch realtime mọi TextLabel/TextButton/TextBox
--- Dữ liệu dịch được chuyển từ Chilli Hub Translator V10.4
+-- Đã bổ sung từ điển từ Chilli Hub Translator V10.4
 -- =========================================================
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
@@ -10,22 +10,119 @@ local RunService = game:GetService("RunService")
 local SCRIPT_URL = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"
 
 -- =========================================================
--- TỪ ĐIỂN VIỆT HÓA (Chuyển từ V10.4)
+-- TỪ ĐIỂN (bổ sung thoải mái, KEY phải khớp CHÍNH XÁC hoặc là 1 phần trong câu)
 -- =========================================================
-local MAP_VI = {
+local DICT = {
+    -- === Từ điển gốc của script mới ===
+    ["Main"]="Chính",
+    ["Home"]="Trang chủ",
+    ["Player"]="Người chơi",
+    ["Players"]="Người chơi",
+    ["Visuals"]="Hình ảnh",
+    ["Visual"]="Hình ảnh",
+    ["Combat"]="Chiến đấu",
+    ["Misc"]="Khác",
+    ["Miscellaneous"]="Khác",
+    ["Settings"]="Cài đặt",
+    ["Setting"]="Cài đặt",
+    ["Config"]="Cấu hình",
+    ["Configs"]="Cấu hình",
+    ["Scripts"]="Kịch bản",
+    ["Script"]="Kịch bản",
+    ["Teleport"]="Dịch chuyển",
+    ["Movement"]="Di chuyển",
+    ["World"]="Thế giới",
+    ["Local"]="Cục bộ",
+    ["Character"]="Nhân vật",
+    ["Extra"]="Bổ sung",
+    ["Utility"]="Tiện ích",
+    ["Utilities"]="Tiện ích",
+    ["Others"]="Khác",
+    ["Fun"]="Giải trí",
+    ["Shop"]="Cửa hàng",
+    ["Trade"]="Giao dịch",
+    ["Toggle"]="Bật/Tắt",
+    ["Enable"]="Bật",
+    ["Disable"]="Tắt",
+    ["Enabled"]="Đã bật",
+    ["Disabled"]="Đã tắt",
+    ["On"]="Bật",
+    ["Off"]="Tắt",
+    ["Close"]="Đóng",
+    ["Open"]="Mở",
+    ["Confirm"]="Xác nhận",
+    ["Cancel"]="Huỷ",
+    ["Apply"]="Áp dụng",
+    ["Reset"]="Đặt lại",
+    ["Save"]="Lưu",
+    ["Load"]="Tải",
+    ["Select"]="Chọn",
+    ["Copy"]="Sao chép",
+    ["Execute"]="Thực thi",
+    ["Start"]="Bắt đầu",
+    ["Stop"]="Dừng",
+    ["Refresh"]="Làm mới",
+    ["Search"]="Tìm kiếm",
+    ["Filter"]="Lọc",
+    ["Sort"]="Sắp xếp",
+    ["Speed"]="Tốc độ",
+    ["Jump"]="Nhảy",
+    ["Fly"]="Bay",
+    ["Walk Speed"]="Tốc độ đi",
+    ["Jump Power"]="Lực nhảy",
+    ["God Mode"]="Bất tử",
+    ["Infinite"]="Vô hạn",
+    ["Health"]="Máu",
+    ["Ammo"]="Đạn",
+    ["Kill"]="Giết",
+    ["Kill All"]="Giết tất cả",
+    ["Aimbot"]="Ngắm tự động",
+    ["Wallhack"]="Xuyên tường",
+    ["Auto Farm"]="Tự động cày",
+    ["Auto"]="Tự động",
+    ["Farm"]="Cày",
+    ["Noclip"]="Xuyên vật thể",
+    ["Anti Ban"]="Chống ban",
+    ["Anti AFK"]="Chống AFK",
+    ["Full Bright"]="Ánh sáng đầy",
+    ["No Fog"]="Không sương mù",
+    ["FOV"]="Tầm nhìn",
+    ["Hitbox"]="Vùng va chạm",
+    ["Invisible"]="Tàng hình",
+    ["Damage"]="Sát thương",
+    ["Range"]="Phạm vi",
+    ["Radius"]="Bán kính",
+    ["Amount"]="Số lượng",
+    ["Value"]="Giá trị",
+    ["Time"]="Thời gian",
+    ["Delay"]="Độ trễ",
+    ["Cooldown"]="Hồi chiêu",
+    ["Loading"]="Đang tải",
+    ["Loaded"]="Đã tải",
+    ["Please wait"]="Vui lòng đợi",
+    ["Error"]="Lỗi",
+    ["Success"]="Thành công",
+    ["Failed"]="Thất bại",
+    ["Warning"]="Cảnh báo",
+    ["Notice"]="Thông báo",
+    ["Language"]="Ngôn ngữ",
+    ["Vietnamese"]="Tiếng Việt",
+    ["English"]="Tiếng Anh",
+    ["Copy Link"]="Sao chép liên kết",
+    ["Made by"]="Được tạo bởi",
+    ["Version"]="Phiên bản",
+    ["Key"]="Khoá",
+    ["Active"]="Kích hoạt",
+
+    -- === BỔ SUNG TỪ CHILLI HUB V10.4 ===
     -- Các Tab Chính
-    ["Farm"] = "Cày Cuốc",
-    ["Player"] = "Người Chơi",
     ["Egg Finder"] = "Máy Dò Trứng",
     ["Predictor"] = "Soi Trứng",
     ["Progress"] = "Tiến Độ",
     ["Server"] = "Máy Chủ",
-    ["Misc"] = "Linh Tinh",
     ["Creator"] = "Tác Giả",
     ["Discord"] = "Discord",
     ["Quick & Keys"] = "Phím Tắt",
-    ["Settings"] = "Cài Đặt",
-    ["Config"] = "Cấu Hình",
 
     -- Dr Scramble Event
     ["Dr Scramble Event"] = "Sự Kiện Dr Scramble",
@@ -81,7 +178,6 @@ local MAP_VI = {
     ["Buy another Scrambled from the event shop when you run out"] = "Tự mua thêm Scrambled từ shop sự kiện khi hết",
     ["Any"] = "Bất Kỳ",
     ["All"] = "Tất Cả",
-    ["Tắt"] = "Tắt",
 
     -- Lab & Scrambled
     ["Lab is locked on this account"] = "Lab đã bị khóa trên tài khoản này",
@@ -271,11 +367,9 @@ local MAP_VI = {
     ["ESP Players"] = "Hiển Thị Người Chơi",
     ["ESP Player Info"] = "Thông Tin Người Chơi ESP",
     ["ESP Player Size"] = "Kích Cỡ Người Chơi ESP",
-    ["Movement"] = "Di Chuyển",
     ["Speed Boost"] = "Tăng Tốc Di Chuyển",
     ["Boost Speed"] = "Tốc Độ Tăng Cường",
     ["Infinite Jump"] = "Nhảy Vô Hạn",
-    ["Character"] = "Nhân Vật",
     ["Anti Ragdoll"] = "Chống Ngã (Ragdoll)",
     ["Anti Trap"] = "Chống Bẫy",
     ["Traps from other players cannot catch you"] = "Bẫy của người khác không bắt được bạn",
@@ -293,7 +387,6 @@ local MAP_VI = {
     ["Hop Delay"] = "Độ Trễ Đổi Server",
     ["Egg Predictor"] = "Soi Trứng (Predictor)",
     ["Sort By"] = "Sắp Xếp Theo",
-    ["Value"] = "Giá Trị",
     ["Preview Card"] = "Xem Thẻ Trước",
     ["Search eggs..."] = "Tìm kiếm trứng...",
     ["Tap an egg below to preview it"] = "Chạm vào trứng bên dưới để xem chi tiết",
@@ -302,7 +395,6 @@ local MAP_VI = {
     ["Fuse Predictor"] = "Soi Tỷ Lệ Ghép (Fuse)",
     ["Machine is empty"] = "Máy đang trống",
     ["Load 3 pets of the same species to see the result odds"] = "Cho 3 thú cùng loài vào để xem tỷ lệ kết quả",
-    ["Search"] = "Tìm Kiếm",
     ["Auto Load Script"] = "Tự Động Nạp Script",
     ["Server Hop Mode"] = "Chế Độ Đổi Server",
     ["Least Players"] = "Ít Người Chơi Nhất",
@@ -313,7 +405,6 @@ local MAP_VI = {
     ["Copy Current Job ID"] = "Chép ID Máy Chủ Hiện Tại",
     ["Rejoin Server"] = "Vào Lại Máy Chủ Này",
     ["Join"] = "Vào",
-    ["Copy"] = "Chép",
     ["Rejoin"] = "Vào Lại",
     ["Hop"] = "Chuyển",
     ["Performance"] = "Hiệu Năng",
@@ -322,11 +413,9 @@ local MAP_VI = {
     ["Strip shadows, textures and effects for the highest FPS"] = "Tắt bóng, kết cấu và hiệu ứng để đạt FPS cao nhất",
     ["FPS and Ping"] = "Hiện FPS & Ping",
     ["FPS and Ping Size"] = "Cỡ Chữ FPS & Ping",
-    ["Utility"] = "Tiện Ích",
     ["Anti AFK"] = "Chống Treo Máy (AFK)",
     ["Creator Event"] = "Sự Kiện Của Tác Giả",
     ["INVITE LINK"] = "LIÊN KẾT MỜI",
-    ["Copy Link"] = "Sao Chép Link",
     ["WHAT YOU GET"] = "BẠN NHẬN ĐƯỢC GÌ",
     ["New Scripts & Updates"] = "Script & Cập Nhật Mới",
     ["Patch notes and new game scripts are posted there first."] = "Chi tiết cập nhật và script game mới được đăng ở đây đầu tiên.",
@@ -349,7 +438,6 @@ local MAP_VI = {
     ["Restore default items, bars and positions"] = "Khôi phục lại vị trí thanh mặc định",
     ["Reset Keybinds"] = "Đặt Lại Nút Gán",
     ["Restore the defaults set in code"] = "Khôi phục lại nút gán mặc định",
-    ["Reset"] = "Đặt Lại",
     ["Interface"] = "Giao Diện",
     ["UI Size"] = "Kích Cỡ Giao Diện",
     ["Scales the main window; the corner grip does the same by hand"] = "Đổi cỡ cửa sổ; kéo góc dưới cùng bên phải để đổi thủ công",
@@ -376,7 +464,6 @@ local MAP_VI = {
     ["Notify Stolen Eggs"] = "Báo Khi Cướp Được Trứng",
     ["Post every egg you bring home"] = "Gửi thông báo mỗi khi bạn cướp thành công mang về nhà",
     ["None"] = "Không Chọn",
-    ["Off"] = "Tắt",
     ["Filter features..."] = "Lọc tính năng...",
     ["Favorite"] = "Khóa Lại",
     ["Unfavorite"] = "Mở Khóa",
@@ -398,150 +485,25 @@ local MAP_VI = {
 }
 
 -- =========================================================
--- REGEX XỬ LÝ CHUỖI ĐỘNG (Chuyển từ V10.4)
--- =========================================================
-local DYNAMIC_PATTERNS = {
-    { 
-        pattern = "^Next Mech portal in (.-)$", 
-        format = function(lang, timeStr) 
-            if lang == "VI" then return "Cổng Mech tiếp theo sau " .. timeStr end 
-            return "Next Mech portal in " .. timeStr 
-        end 
-    },
-    { 
-        pattern = "^Unstable DNA %- needs (.-) %- pity (%d+)%/(%d+) %- free rerolls (%d+) %- rotates in (.-)$", 
-        format = function(lang, needs, pity1, pity2, reroll, timeStr) 
-            if lang == "VI" then 
-                return "DNA Không Ổn Định - cần " .. needs .. " - bảo hiểm " .. pity1 .. "/" .. pity2 .. " - lượt quay free " .. reroll .. " - đổi sau " .. timeStr 
-            end 
-            return "Unstable DNA - needs " .. needs .. " - pity " .. pity1 .. "/" .. pity2 .. " - free rerolls " .. reroll .. " - rotates in " .. timeStr 
-        end 
-    },
-    { 
-        pattern = "^Samples (%d+) %- Lost (%d+)/(%d+) Drone (.-) %- Outbreak in (.-)$", 
-        format = function(lang, s, l1, l2, d, t) 
-            if lang == "VI" then return "Mẫu vật " .. s .. " - Đã rơi " .. l1 .. "/" .. l2 .. " - Drone " .. d .. " - Bùng phát sau " .. t end 
-            return "Samples " .. s .. " - Lost " .. l1 .. "/" .. l2 .. " - Drone " .. d .. " - Outbreak in " .. t 
-        end 
-    },
-    { 
-        pattern = "^Lost Parts on map (%d+)/(%d+) %- Collected (%d+)/(%d+)$", 
-        format = function(lang, m1, m2, c1, c2) 
-            if lang == "VI" then return "Phụ Tùng Rơi trên map " .. m1 .. "/" .. m2 .. " - Đã nhặt " .. c1 .. "/" .. c2 end 
-            return "Lost Parts on map " .. m1 .. "/" .. m2 .. " - Collected " .. c1 .. "/" .. c2 
-        end 
-    },
-    { 
-        pattern = "^(%d+) selected$", 
-        format = function(lang, count) 
-            if lang == "VI" then return "Đã chọn " .. count end 
-            return count .. " selected" 
-        end 
-    },
-    { 
-        pattern = "^IN INVENTORY %((%d+)%)$", 
-        format = function(lang, count) 
-            if lang == "VI" then return "TRONG TÚI ĐỒ (" .. count .. ")" end 
-            return "IN INVENTORY (" .. count .. ")" 
-        end 
-    },
-    { 
-        pattern = "^Eggs placed (%d+)%/(%d+) %- (%d+)%/(%d+) pets equipped, (%d+) in bag$", 
-        format = function(lang, e1, e2, p1, p2, b1) 
-            if lang == "VI" then return "Đã đặt " .. e1 .. "/" .. e2 .. " trứng - " .. p1 .. "/" .. p2 .. " thú trang bị, " .. b1 .. " trong túi" end 
-            return "Eggs placed " .. e1 .. "/" .. e2 .. " - " .. p1 .. "/" .. p2 .. " pets equipped, " .. b1 .. " in bag" 
-        end 
-    },
-    { 
-        pattern = "^Pet matches %- (%d+) pets for %$(.-)$", 
-        format = function(lang, count, val) 
-            if lang == "VI" then return "Thú khớp lệnh - " .. count .. " thú, tổng giá $" .. val end 
-            return "Pet matches - " .. count .. " pets for $" .. val 
-        end 
-    },
-    { 
-        pattern = "^Egg matches %- (%d+) eggs for %$(.-)$", 
-        format = function(lang, count, val) 
-            if lang == "VI" then return "Trứng khớp lệnh - " .. count .. " trứng, tổng giá $" .. val end 
-            return "Egg matches - " .. count .. " eggs for $" .. val 
-        end 
-    },
-    { 
-        pattern = "^Next fuse %- (%d+) (.-) for %$(.-)$", 
-        format = function(lang, count, name, val) 
-            if lang == "VI" then return "Ghép tiếp theo - " .. count .. " " .. name .. " tốn $" .. val end 
-            return "Next fuse - " .. count .. " " .. name .. " for $" .. val 
-        end 
-    },
-    { 
-        pattern = "^Favorite matches %- (%d+) pets, (%d+) to mark %| (%d+) favorited$", 
-        format = function(lang, mCount, mark, fav) 
-            if lang == "VI" then return "Khớp khóa thú - " .. mCount .. " con, " .. mark .. " cần khóa | " .. fav .. " đã khóa" end 
-            return "Favorite matches - " .. mCount .. " pets, " .. mark .. " to mark | " .. fav .. " favorited" 
-        end 
-    },
-    { 
-        pattern = "^Riftborn %- needs (.-) %- pity (%d+)%/(%d+) %- free rerolls (%d+) %- rotates in (.-) %- boss portal (.-)$", 
-        format = function(lang, needs, pity1, pity2, reroll, timeStr, status) 
-            if lang == "VI" then return "Riftborn - Cần: " .. needs .. " - Bảo hiểm: " .. pity1 .. "/" .. pity2 .. " - Quay free: " .. reroll .. " - Đổi sau " .. timeStr .. " - Cổng Boss: " .. (status == "closed" and "Đóng" or "Mở") end 
-            return "Riftborn - needs " .. needs .. " - pity " .. pity1 .. "/" .. pity2 .. " - free rerolls " .. reroll .. " - rotates in " .. timeStr .. " - boss portal " .. status 
-        end 
-    },
-    { 
-        pattern = "^(%d+) eggs %- (%d+) ready %- (%d+) growing %- (%d+) in bag %- Total (.-)$", 
-        format = function(lang, e1, r1, g1, b1, t1) 
-            if lang == "VI" then return e1 .. " trứng - " .. r1 .. " xong - " .. g1 .. " đang lớn - " .. b1 .. " trong túi - Tổng " .. t1 end 
-            return e1 .. " eggs - " .. r1 .. " ready - " .. g1 .. " growing - " .. b1 .. " in bag - Total " .. t1 
-        end 
-    },
-    { 
-        pattern = "^Players (%d+)%/(%d+)$", 
-        format = function(lang, p1, p2) 
-            if lang == "VI" then return "Người chơi: " .. p1 .. "/" .. p2 end 
-            return "Players " .. p1 .. "/" .. p2 
-        end 
-    }
-}
-
--- =========================================================
--- HÀM DỊCH (từ V10.4, chuyển sang dùng cho script mới)
+-- HÀM DỊCH (giữ nguyên logic script mới)
 -- =========================================================
 local sortedKeys = {}
-for k in pairs(MAP_VI) do
+for k in pairs(DICT) do
     table.insert(sortedKeys, k)
 end
+-- dài trước để "Walk Speed" thay trước "Speed"
 table.sort(sortedKeys, function(a,b) return #a > #b end)
 
 local escapePattern = function(s)
     return (s:gsub("([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1"))
 end
 
-local function safeReplace(str, findStr, replaceStr)
-    local startIdx, endIdx = str:find(findStr, 1, true)
-    if startIdx then
-        return str:sub(1, startIdx - 1) .. replaceStr .. str:sub(endIdx + 1)
-    end
-    return str
-end
-
 local translateText = function(text)
     if type(text) ~= "string" or text == "" then return text end
-    
-    -- Check exact match
-    if MAP_VI[text] then return MAP_VI[text] end
-    
-    -- Check dynamic patterns
-    for _, item in ipairs(DYNAMIC_PATTERNS) do
-        local matches = {text:match(item.pattern)}
-        if #matches > 0 then
-            return item.format("VI", unpack(matches))
-        end
-    end
-    
-    -- Fallback: replace known phrases (longest first)
+    if DICT[text] then return DICT[text] end
     local out = text
     for _, en in ipairs(sortedKeys) do
-        local vi = MAP_VI[en]
+        local vi = DICT[en]
         local pat = "%f[%w]" .. escapePattern(en) .. "%f[%W]"
         out = out:gsub(pat, vi)
     end
@@ -549,9 +511,9 @@ local translateText = function(text)
 end
 
 -- =========================================================
--- HOOK GUI (giữ nguyên logic script mới)
+-- HOOK GUI OBJECT (giữ nguyên)
 -- =========================================================
-local translating = false
+local translating = false -- tránh đệ quy
 
 local function hookObject(obj)
     if not (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) then return end
@@ -589,6 +551,7 @@ local function hookObject(obj)
     end
 end
 
+-- Theo dõi 1 ScreenGui bất kỳ
 local function watchGui(gui)
     if not gui:IsA("ScreenGui") and not gui:IsA("GuiObject") then return end
     for _, d in ipairs(gui:GetDescendants()) do
@@ -626,7 +589,7 @@ for _, cont in ipairs(containers) do
 end
 
 -- =========================================================
--- HÀM TẢI SCRIPT (giữ nguyên logic script mới)
+-- HÀM TẢI SCRIPT (giữ nguyên)
 -- =========================================================
 local function fetchScript(url)
     local ok, res = pcall(function() return game:HttpGet(url) end)
@@ -645,7 +608,7 @@ local function fetchScript(url)
 end
 
 -- =========================================================
--- UI CHỌN NGÔN NGỮ (giữ nguyên logic script mới)
+-- UI CHỌN NGÔN NGỮ (giữ nguyên)
 -- =========================================================
 local gui = Instance.new("ScreenGui")
 gui.Name = "LangSelector"
@@ -735,7 +698,7 @@ status.Font = Enum.Font.Gotham
 status.TextSize = 12
 
 -- =========================================================
--- CHẠY (giữ nguyên logic script mới)
+-- CHẠY (giữ nguyên)
 -- =========================================================
 local loading = false
 local function run(lang)
@@ -767,7 +730,7 @@ local function run(lang)
         
         -- Nếu chọn English => tạm tắt hook dịch
         if lang == "en" then
-            translating = true -- khóa vĩnh viễn apply()
+            translating = true -- khoá vĩnh viễn apply()
         end
         
         local ok, err2 = pcall(fn)
