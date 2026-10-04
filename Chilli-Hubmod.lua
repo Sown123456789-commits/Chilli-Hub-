@@ -363,42 +363,82 @@ local function hookObject(obj)
     end
 end
 
--- ✅ CHỈ hook GUI của Chilli Hub (dựa vào tên ScreenGui đặc trưng)
-local function watchGui(gui)
-    if not gui:IsA("ScreenGui") then return end
+-- =========================================================
+-- HOOK GUI (V10.6 - Hook tất cả trừ GUI hệ thống Roblox)
+-- =========================================================
+local translating = false
+
+-- Danh sách GUI hệ thống cần BỎ QUA (không dịch)
+local IGNORE_GUI_NAMES = {
+    ["Chat"] = true,
+    ["Backpack"] = true,
+    ["PlayerList"] = true,
+    ["BubbleChat"] = true,
+    ["TouchGui"] = true,
+    ["TouchControlFrame"] = true,
+    ["ControlFrame"] = true,
+    ["Topbar"] = true,
+    ["StarterGui"] = true,
+    ["LangSelector"] = true,
+}
+
+local function hookObject(obj)
+    if not (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) then return end
+    if obj:GetAttribute("ChilliHooked") then return end
+    obj:SetAttribute("ChilliHooked", true)
     
-    -- Bỏ qua GUI của chính LangSelector
-    if gui.Name == "LangSelector" then return end
-    
-    -- ✅ Chỉ hook các ScreenGui có tên liên quan đến Chilli Hub
-    local nameLower = gui.Name:lower()
-    if not (nameLower:find("chilli") or nameLower:find("hub") or 
-            nameLower:find("steal") or nameLower:find("egg") or
-            nameLower:find("script") or nameLower:find("main")) then
-        return
+    local function apply()
+        if translating then return end
+        translating = true
+        
+        local ok, cur = pcall(function() return obj.Text end)
+        if ok and type(cur) == "string" and cur ~= "" then
+            local new = translateText(cur)
+            if new ~= cur then
+                pcall(function() obj.Text = new end)
+            end
+        end
+        
+        if obj:IsA("TextBox") then
+            local ok2, ph = pcall(function() return obj.PlaceholderText end)
+            if ok2 and type(ph) == "string" and ph ~= "" then
+                local new = translateText(ph)
+                if new ~= ph then
+                    pcall(function() obj.PlaceholderText = new end)
+                end
+            end
+        end
+        
+        translating = false
     end
     
-    -- Hook descendants (chia batch để không block)
+    apply()
+    obj:GetPropertyChangedSignal("Text"):Connect(apply)
+    if obj:IsA("TextBox") then
+        obj:GetPropertyChangedSignal("PlaceholderText"):Connect(apply)
+    end
+end
+
+local function watchGui(gui)
+    if not gui:IsA("ScreenGui") then return end
+    if IGNORE_GUI_NAMES[gui.Name] then return end
+    
     local descendants = gui:GetDescendants()
     for i, d in ipairs(descendants) do
         hookObject(d)
-        if i % 30 == 0 then
-            task.wait() -- Nhường luồng mỗi 30 objects
-        end
+        if i % 30 == 0 then task.wait() end
     end
     
-    -- Hook objects mới thêm vào
     gui.DescendantAdded:Connect(function(d)
         task.defer(hookObject, d)
     end)
 end
 
 -- =========================================================
--- CHỜ CHILLI HUB LOAD XONG RỒI MỚI HOOK
+-- WATCHER: Chờ Chilli Hub load rồi hook tất cả GUI (trừ hệ thống)
 -- =========================================================
 local function startWatching()
-    -- Đợi 3s cho Chilli Hub load
-    task.wait(3)
+    task.wait(3) -- Chờ Chilli Hub load xong
     
     local targets = {
         CoreGui,
@@ -407,23 +447,20 @@ local function startWatching()
     
     for _, container in ipairs(targets) do
         if container then
-            -- Quét ScreenGui hiện có
             for _, gui in ipairs(container:GetChildren()) do
-                if gui:IsA("ScreenGui") then
+                if gui:IsA("ScreenGui") and not IGNORE_GUI_NAMES[gui.Name] then
                     task.spawn(function() watchGui(gui) end)
                 end
             end
             
-            -- Lắng nghe ScreenGui mới
             container.DescendantAdded:Connect(function(d)
-                if d:IsA("ScreenGui") then
+                if d:IsA("ScreenGui") and not IGNORE_GUI_NAMES[d.Name] then
                     task.defer(function() watchGui(d) end)
                 end
             end)
         end
     end
 end
-
 -- =========================================================
 -- TẢI SCRIPT
 -- =========================================================
