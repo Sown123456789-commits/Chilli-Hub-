@@ -75,6 +75,13 @@ local EXACT_MATCH_VI = {
     ["GOLDEN"] = "VÀNG",
     ["SILVER"] = "BẠC",
     ["RAINBOW"] = "CẦU VỒNG"
+    -- === CẬP NHẬT TỪ ẢNH MỚI (INSTANT STEAL V2) ===
+["Normal"] = "Bình Thường",
+["Steps"] = "Từng Bước",
+["Fast Delivery"] = "Giao Hàng Nhanh",
+["Cancel"] = "Hủy",
+["Turn On"] = "Bật Lên",
+["WARNING"] = "CẢNH BÁO",
 }
 
 -- =========================================================
@@ -392,6 +399,24 @@ local MAP_VI = {
     ["Notify Stolen Eggs"] = "Báo Cáo Cướp Trứng",
     ["Post every egg you bring home"] = "Gửi thông báo mỗi quả trứng mang về thành công",
     ["selected"] = "đã chọn"
+    -- === CẬP NHẬT TỪ ẢNH MỚI (INSTANT STEAL V2) ===
+["Đồng Hành Wisp"] = "Đồng Hành Wisp",
+["Cuớp Siêu Tốc (Instant Steal)"] = "Cướp Siêu Tốc (Instant Steal)",
+["Cuớp Siêu Tốc (Instant Steal) V2"] = "Cướp Siêu Tốc (Instant Steal) V2",
+["Chuyển trứng về căn cứ trong vài giây (cần đủ tốc độ)"] = "Chuyển trứng về căn cứ trong vài giây (cần đủ tốc độ)",
+["Only works in Titan Temple, Light Dark and Enchanted Forest"] = "Chỉ hoạt động ở Đền Titan, Rừng Sáng Tối và Rừng Phù Phép",
+["Other Zones Delivery"] = "Giao Trứng Khu Vực Khác",
+["How eggs outside Titan Temple, Light Dark and Enchanted Forest come home"] = "Cách trứng ngoài Đền Titan, Rừng Sáng Tối và Rừng Phù Phép được mang về",
+["Delivers the same way as Cuớp Siêu Tốc (Instant Steal) V2 instead of using steps"] = "Giao trứng giống như Cướp Siêu Tốc V2 thay vì dùng từng bước",
+["Số Bước Cướp Siêu Tốc"] = "Số Bước Cướp Siêu Tốc",
+["Càng nhiều bước càng an toàn nhưng bay chậm hơn"] = "Càng nhiều bước càng an toàn nhưng bay chậm hơn",
+["Steal eggs of the chosen rarity and every rarity above it"] = "Cướp trứng từ độ hiếm đã chọn trở lên",
+["Giá Trị Cướp Min"] = "Giá Trị Cướp Min",
+["12 đã chọn"] = "12 đã chọn",
+["Cuớp Siêu Tốc (Instant Steal) V2 may not work well below 40 FPS or above 200 ms ping."] = "Cướp Siêu Tốc (Instant Steal) V2 có thể hoạt động không tốt dưới 40 FPS hoặc ping trên 200 ms.",
+["Your FPS"] = "FPS của bạn",
+["Your Ping"] = "Ping của bạn",
+["ms"] = "ms",
 }
 
 -- =========================================================
