@@ -1,7 +1,7 @@
 -- =========================================================
--- CHILLI HUB TRANSLATOR V11.0 (EXACT + MAP DICTIONARY)
+-- CHILLI HUB TRANSLATOR V11.1 (EXACT + MAP DICTIONARY)
 -- Cơ chế: Polling 0.5s - Không hook event - Chống lag tuyệt đối
--- Ưu tiên EXACT_MATCH_VI trước, fallback sang MAP_VI
+-- Ưu tiên: EXACT_MATCH_VI → MAP_VI (exact) → MAP_VI (gsub fallback)
 -- =========================================================
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
@@ -13,6 +13,7 @@ local SCRIPT_URL = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chil
 -- TỪ ĐIỂN 1: KHỚP CHÍNH XÁC (nhanh nhất, ưu tiên cao)
 -- =========================================================
 local EXACT_MATCH_VI = {
+    -- Chung
     ["Chilli Hub"] = "Chilli Hub V3",
     ["Hop"] = "Đổi Server",
     ["Join"] = "Vào Phòng",
@@ -42,6 +43,15 @@ local EXACT_MATCH_VI = {
     ["Always"] = "Luôn luôn",
     ["Never"] = "Không bao giờ",
     ["Value"] = "Giá trị",
+    ["Normal"] = "Bình Thường",
+    ["Steps"] = "Từng Bước",
+    ["Fast Delivery"] = "Giao Hàng Nhanh",
+    ["Cancel"] = "Hủy",
+    ["Turn On"] = "Bật Lên",
+    ["WARNING"] = "CẢNH BÁO",
+    ["selected"] = "đã chọn",
+
+    -- Độ hiếm
     ["Cosmic"] = "Vũ Trụ (Cosmic)",
     ["Divine"] = "Thánh Thần (Divine)",
     ["Eternal"] = "Vĩnh Cửu (Eternal)",
@@ -52,6 +62,10 @@ local EXACT_MATCH_VI = {
     ["Uncommon"] = "Thường (Uncommon)",
     ["Common"] = "Phổ Thông (Common)",
     ["Secret"] = "Bí Ẩn (Secret)",
+    ["3 - Rare"] = "3 - Hiếm (Rare)",
+    ["6 - Mythic"] = "6 - Thần Thoại (Mythic)",
+
+    -- Chế độ chọn
     ["Least Players"] = "Ít người chơi nhất",
     ["Steal Then Hop"] = "Cướp xong đổi server",
     ["Rarity Only"] = "Chỉ theo độ hiếm",
@@ -64,8 +78,8 @@ local EXACT_MATCH_VI = {
     ["Match Any"] = "Khớp bất kỳ",
     ["Highest Value"] = "Giá trị cao nhất",
     ["Lowest Value"] = "Giá trị thấp nhất",
-    ["3 - Rare"] = "3 - Hiếm (Rare)",
-    ["6 - Mythic"] = "6 - Thần Thoại (Mythic)",
+
+    -- Chữ viết hoa
     ["EGGS"] = "TRỨNG",
     ["READY"] = "SẴN SÀNG",
     ["GROWING"] = "ĐANG LỚN",
@@ -75,19 +89,13 @@ local EXACT_MATCH_VI = {
     ["GOLDEN"] = "VÀNG",
     ["SILVER"] = "BẠC",
     ["RAINBOW"] = "CẦU VỒNG"
-    -- === CẬP NHẬT TỪ ẢNH MỚI (INSTANT STEAL V2) ===
-["Normal"] = "Bình Thường",
-["Steps"] = "Từng Bước",
-["Fast Delivery"] = "Giao Hàng Nhanh",
-["Cancel"] = "Hủy",
-["Turn On"] = "Bật Lên",
-["WARNING"] = "CẢNH BÁO",
 }
 
 -- =========================================================
 -- TỪ ĐIỂN 2: THAY THẾ CỤM TỪ (fallback, xử lý câu dài)
 -- =========================================================
 local MAP_VI = {
+    -- Tab chính
     ["Chilli Hub"] = "Chilli Hub V3",
     ["Farm"] = "Cày Cuốc",
     ["Player"] = "Người Chơi",
@@ -103,69 +111,34 @@ local MAP_VI = {
     ["Filter features..."] = "Lọc tính năng...",
     ["Search"] = "Tìm kiếm",
 
+    -- Sự kiện
     ["Dr Scramble Lab & Mech"] = "Phòng Lab & Robot Scramble",
     ["Butterfly Bloom"] = "Sự Kiện Bắt Bướm",
     ["Wisp Companion"] = "Đồng Hành Wisp",
+
+    -- Auto Steal (Tự Động Cướp)
     ["Auto Steal"] = "Tự Động Cướp Trứng",
-    ["Auto Place Egg"] = "Tự Động Đặt Trứng",
-    ["Auto Treadmill"] = "Tự Động Máy Tập",
-    ["Auto Hatch & Equip"] = "Tự Ấp Trứng & Trang Bị",
-    ["Auto Sell"] = "Tự Động Bán",
-    ["Auto Sell Pet"] = "Tự Động Bán Pet",
-    ["Auto Sell Egg"] = "Tự Động Bán Trứng",
-    ["Auto Sell Lab Egg"] = "Tự Động Bán Trứng Lab",
-    ["Auto Fuse Machine"] = "Máy Dung Hợp Pet",
-    ["Auto Favorite"] = "Tự Động Khóa Pet",
-    ["Priority"] = "Ưu Tiên Nhiệm Vụ",
-    ["ESP"] = "Định Vị (ESP)",
-    ["Movement"] = "Di Chuyển",
-    ["Character"] = "Nhân Vật",
-    ["Combat"] = "Chiến Đấu",
-    ["Discord Webhook"] = "Cài Đặt Webhook Discord",
-    ["Egg Predictor"] = "Dự Đoán Trứng",
-    ["Lab Predictor"] = "Dự Đoán Phòng Lab",
-    ["Fuse Predictor"] = "Dự Đoán Dung Hợp",
-    ["Auto Progression"] = "Tự Động Tiến Trình",
-    ["Performance"] = "Hiệu Năng",
-    ["Utility"] = "Tiện Ích",
-    ["Egg Finder"] = "Dò Tìm Trứng",
-    ["Quick Bar 1"] = "Thanh Phím Nhanh 1",
-    ["Quick Bar 2"] = "Thanh Phím Nhanh 2",
-
-    ["Auto Butterfly Bloom"] = "Tự Động Bắt Bướm",
-    ["Catch Mode"] = "Chế Độ Bắt",
-    ["Catch Priority"] = "Ưu Tiên Bắt",
-    ["Only for Chase mode"] = "Chỉ dùng cho chế độ Đuổi theo",
-    ["Catch Butterflies"] = "Chọn Bướm Cần Bắt",
-    ["Radiant Butterfly"] = "Bướm Rực Rỡ",
-    ["Amethyst Butterfly"] = "Bướm Thạch Anh Tím",
-    ["Sapphire Butterfly"] = "Bướm Lam Ngọc (Sapphire)",
-    ["Emerald Butterfly"] = "Bướm Lục Bảo (Emerald)",
-    ["Tween Speed"] = "Tốc Độ Bay (Tween)",
-    ["Auto Trade Up"] = "Tự Nâng Cấp Bướm",
-    ["Trade Up Tiers"] = "Bậc Nâng Cấp",
-    ["Smart Trade For Essence"] = "Đổi Bướm Lấy Tinh Chất Thông Minh",
-    ["Going to the middle of the bloom"] = "Đang đi tới trung tâm khu bướm nở",
-
-    ["Auto Craft Essence"] = "Tự Chế Tạo Tinh Chất",
-    ["Auto Use Enchanted Essence"] = "Tự Dùng Tinh Chất Phù Phép",
-    ["Essence Min Rarity"] = "Độ Hiếm Nhận Tinh Chất Min",
-    ["Only eggs of this rarity and above get the essence"] = "Chỉ trứng đạt độ hiếm này trở lên mới nhận tinh chất",
-    ["Essence Min Value"] = "Giá Trị Nhận Tinh Chất Min",
-    ["Skip eggs worth less than this (0 = off)"] = "Bỏ qua trứng giá trị nhỏ hơn mức này (0 = tắt)",
-    ["Essence Target Eggs"] = "Mục Tiêu Trứng Nhận Tinh Chất",
-    ["Only use the essence on these eggs (empty = all)"] = "Chỉ dùng tinh chất lên trứng này (trống = tất cả)",
-    ["Essence Priority"] = "Ưu Tiên Dùng Tinh Chất",
-    ["Which egg gets the essence first"] = "Trứng nào được ưu tiên nhận tinh chất trước",
-    ["Essence Skip Enchanted Eggs"] = "Bỏ Qua Trứng Đã Phù Phép",
-    ["Skip eggs that already got Enchanted, other mutations still get the essence"] = "Bỏ qua trứng đã phù phép, đột biến khác vẫn nhận tinh chất",
-
+    ["Tự Động Cướp Trứng"] = "Tự Động Cướp Trứng",
+    ["Tự Động Cướp"] = "Tự Động Cướp",
     ["Instant Steal"] = "Cướp Siêu Tốc (Instant Steal)",
+    ["Cuớp Siêu Tốc (Instant Steal)"] = "Cướp Siêu Tốc (Instant Steal)",
+    ["Cuớp Siêu Tốc (Instant Steal) V2"] = "Cướp Siêu Tốc (Instant Steal) V2",
     ["Delivers the egg to the safe zone in a few seconds, needs enough Speed"] = "Chuyển trứng về căn cứ trong vài giây (cần đủ tốc độ)",
+    ["Chuyển trứng về căn cứ trong vài giây (cần đủ tốc độ)"] = "Chuyển trứng về căn cứ trong vài giây (cần đủ tốc độ)",
+    ["Only works in Titan Temple, Light Dark and Enchanted Forest"] = "Chỉ hoạt động ở Đền Titan, Rừng Sáng Tối và Rừng Phù Phép",
+    ["Other Zones Delivery"] = "Giao Trứng Khu Vực Khác",
+    ["How eggs outside Titan Temple, Light Dark and Enchanted Forest come home"] = "Cách trứng ngoài Đền Titan, Rừng Sáng Tối và Rừng Phù Phép được mang về",
+    ["Delivers the same way as Cuớp Siêu Tốc (Instant Steal) V2 instead of using steps"] = "Giao trứng giống như Cướp Siêu Tốc V2 thay vì dùng từng bước",
     ["Instant Steal Steps"] = "Số Bước Cướp Siêu Tốc",
+    ["Số Bước Cướp Siêu Tốc"] = "Số Bước Cướp Siêu Tốc",
     ["Higher is safer but takes longer"] = "Càng nhiều bước càng an toàn nhưng bay chậm hơn",
+    ["Càng nhiều bước càng an toàn nhưng bay chậm hơn"] = "Càng nhiều bước càng an toàn nhưng bay chậm hơn",
     ["Target Areas"] = "Khu Vực Mục Tiêu",
+    ["Khu Vực Mục Tiêu"] = "Khu Vực Mục Tiêu",
+    ["Min Rarity"] = "Độ Hiếm Tối Thiểu",
+    ["Steal eggs of the chosen rarity and every rarity above it"] = "Cướp trứng từ độ hiếm đã chọn trở lên",
     ["Min Steal Value"] = "Giá Trị Cướp Min",
+    ["Giá Trị Cướp Min"] = "Giá Trị Cướp Min",
     ["Target Specific Eggs"] = "Chọn Đích Danh Trứng Cần Cướp",
     ["Steal Missing Lab Eggs"] = "Cướp Trứng Lab Còn Thiếu",
     ["Steal Missing Index Eggs"] = "Cướp Trứng Sách Còn Thiếu",
@@ -174,7 +147,10 @@ local MAP_VI = {
     ["Carry Speed"] = "Tốc Độ Bê Trứng",
     ["Over 100% may glitch"] = "Trên 100% có thể bị lỗi vị trí",
     ["Anti Guard Panel"] = "Bảng Chống Vệ Sĩ",
+    ["Anti Guard"] = "Chống Vệ Sĩ",
 
+    -- Auto Place Egg
+    ["Auto Place Egg"] = "Tự Động Đặt Trứng",
     ["Place Egg Rule"] = "Quy Tắc Đặt Trứng",
     ["Place Egg Order"] = "Thứ Tự Đặt Trứng",
     ["Place Rarities"] = "Độ Hiếm Đặt Trứng",
@@ -184,7 +160,10 @@ local MAP_VI = {
     ["Min Place Value"] = "Giá Trị Đặt Min",
     ["Skip eggs worth less than this (0 = off)"] = "Bỏ qua trứng giá trị thấp hơn mức này (0 = tắt)",
     ["Stay On Treadmill"] = "Cố Định Trên Máy Tập",
+    ["Auto Treadmill"] = "Tự Động Máy Tập",
 
+    -- Auto Hatch
+    ["Auto Hatch & Equip"] = "Tự Ấp Trứng & Trang Bị",
     ["Auto Hatch"] = "Tự Động Ấp Trứng",
     ["Hatch Min Rarity"] = "Độ Hiếm Ấp Min",
     ["Hatch eggs of the chosen rarity and every rarity above it"] = "Ấp trứng từ độ hiếm đã chọn trở lên",
@@ -193,6 +172,11 @@ local MAP_VI = {
     ["Auto Equip Best"] = "Tự Trang Bị Pet Tốt Nhất",
     ["Equip Best when a better pet appears"] = "Tự trang bị khi có pet mạnh hơn xuất hiện",
 
+    -- Auto Sell
+    ["Auto Sell"] = "Tự Động Bán",
+    ["Auto Sell Pet"] = "Tự Động Bán Pet",
+    ["Auto Sell Egg"] = "Tự Động Bán Trứng",
+    ["Auto Sell Lab Egg"] = "Tự Động Bán Trứng Lab",
     ["Sell Pets Now"] = "Bán Pet Ngay",
     ["Sell matching pets once"] = "Bán các pet khớp điều kiện một lần",
     ["Sell Pet Rule"] = "Quy Tắc Bán Pet",
@@ -229,6 +213,8 @@ local MAP_VI = {
     ["Keep Lab Pets"] = "Giữ Lại Pet Lab",
     ["Lab eggs of these pets are never sold"] = "Trứng Lab của những pet này sẽ không bao giờ bị bán",
 
+    -- Auto Fuse
+    ["Auto Fuse Machine"] = "Máy Dung Hợp Pet",
     ["No three matching pets"] = "Không đủ 3 pet trùng khớp",
     ["Fuse 3 same pets into an egg, nonstop"] = "Ghép 3 pet cùng loại thành 1 trứng liên tục",
     ["Fuse Priority Mode"] = "Chế Độ Ưu Tiên Dung Hợp",
@@ -240,6 +226,8 @@ local MAP_VI = {
     ["Eject Incomplete Slots"] = "Nhả Các Ô Chưa Đủ Bộ",
     ["Take out pets that can't make a set"] = "Đẩy ra các pet không thể ghép đủ bộ 3",
 
+    -- Auto Favorite
+    ["Auto Favorite"] = "Tự Động Khóa Pet",
     ["Auto Favorite Pet"] = "Tự Động Khóa Pet",
     ["Favorite pets matching the rules below"] = "Khóa các pet khớp quy tắc bên dưới",
     ["Favorite Pets Now"] = "Khóa Pet Ngay",
@@ -263,16 +251,21 @@ local MAP_VI = {
     ["Unfavorite Equipped Now"] = "Bỏ Khóa Pet Đang Dùng Ngay",
     ["Unfavorite all equipped pets once"] = "Mở khóa tất cả pet đang trang bị một lần",
 
+    -- Dr Scramble / Lab / Mech
+    ["Dr Scramble Event"] = "Sự Kiện Dr Scramble",
     ["Auto Mech Boss"] = "Tự Động Đánh Boss Robot",
     ["Mech Tween Speed"] = "Tốc Độ Bay Đánh Boss",
+    ["Mech Tốc Độ Bay (Tween)"] = "Tốc Độ Bay Đánh Boss",
     ["Main Weapon Hold"] = "Thời Gian Giữ Vũ Khí Chính",
     ["Scrambler Hold"] = "Thời Gian Giữ Súng Biến Đổi",
     ["Swap Two Weapons"] = "Tự Đổi Qua Lại 2 Vũ Khí",
     ["Boss Server Hop"] = "Tự Đổi Server Săn Boss",
+    ["Boss Đổi Máy Chủ Ngay"] = "Tự Đổi Server Săn Boss",
     ["After each boss, hops to a less crowded server to fight again"] = "Sau mỗi boss, đổi sang server vắng hơn để đánh tiếp",
     ["Keep Hopping For"] = "Thời Gian Đổi Server Liên Tục",
     ["Keeps fighting every boss it finds and hopping for this long"] = "Liên tục săn boss tìm được và đổi server trong thời gian này",
     ["Auto Claim Mastery"] = "Tự Nhận Thưởng Tinh Thông Boss",
+    ["Tự Động Nhận Thưởng Mastery"] = "Tự Nhận Thưởng Tinh Thông Boss",
     ["Claims Boss Mastery rewards as soon as they unlock"] = "Tự nhận thưởng Tinh Thông Boss ngay khi mở khóa",
     ["Lab Banners"] = "Biểu Ngữ Phòng Lab",
     ["Only trade and steal for these banners (empty = all)"] = "Chỉ đổi và cướp các biểu ngữ này (trống = tất cả)",
@@ -296,11 +289,48 @@ local MAP_VI = {
     ["Which egg gets the consumable first"] = "Trứng nào được ưu tiên dùng thuốc trước",
     ["Mutation Target Eggs"] = "Mục Tiêu Trứng Đột Biến",
     ["Only use the consumable on these eggs (empty = all)"] = "Chỉ dùng thuốc lên các trứng này (trống = tất cả)",
-    ["Auto Wisp"] = "Tự Động Nhặt Wisp",
-    ["Auto Banjo Cricket"] = "Tự Động Bắt Dế Banjo",
+    ["Need a Scrambled consumable"] = "Cần vật phẩm Scrambled",
+    ["Buy Scrambled from the event shop"] = "Mua Scrambled từ shop sự kiện",
+    ["Unstable DNA"] = "DNA Không Ổn Định (Unstable DNA)",
 
+    -- Butterfly Bloom
+    ["Auto Butterfly Bloom"] = "Tự Động Bắt Bướm",
+    ["Tự động Butterfly Bloom"] = "Tự Động Bắt Bướm",
+    ["Catch Mode"] = "Chế Độ Bắt",
+    ["Catch Priority"] = "Ưu Tiên Bắt",
+    ["Only for Chase mode"] = "Chỉ dùng cho chế độ Đuổi theo",
+    ["Catch Butterflies"] = "Chọn Bướm Cần Bắt",
+    ["Radiant Butterfly"] = "Bướm Rực Rỡ",
+    ["Amethyst Butterfly"] = "Bướm Thạch Anh Tím",
+    ["Sapphire Butterfly"] = "Bướm Lam Ngọc (Sapphire)",
+    ["Emerald Butterfly"] = "Bướm Lục Bảo (Emerald)",
+    ["Tween Speed"] = "Tốc Độ Bay (Tween)",
+    ["Tốc Độ Bay (Tween)"] = "Tốc Độ Bay (Tween)",
+    ["Auto Trade Up"] = "Tự Nâng Cấp Bướm",
+    ["Trade Up Tiers"] = "Bậc Nâng Cấp",
+    ["Smart Trade For Essence"] = "Đổi Bướm Lấy Tinh Chất Thông Minh",
+    ["Going to the middle of the bloom"] = "Đang đi tới trung tâm khu bướm nở",
+
+    -- Essence
+    ["Auto Craft Essence"] = "Tự Chế Tạo Tinh Chất",
+    ["Auto Use Enchanted Essence"] = "Tự Dùng Tinh Chất Phù Phép",
+    ["Essence Min Rarity"] = "Độ Hiếm Nhận Tinh Chất Min",
+    ["Essence Độ Hiếm Tối Thiểu"] = "Độ Hiếm Nhận Tinh Chất Min",
+    ["Only eggs of this rarity and above get the essence"] = "Chỉ trứng đạt độ hiếm này trở lên mới nhận tinh chất",
+    ["Essence Min Value"] = "Giá Trị Nhận Tinh Chất Min",
+    ["Essence Min Giá trị"] = "Giá Trị Nhận Tinh Chất Min",
+    ["Skip eggs worth less than this (0 = off)"] = "Bỏ qua trứng giá trị nhỏ hơn mức này (0 = tắt)",
+    ["Essence Target Eggs"] = "Mục Tiêu Trứng Nhận Tinh Chất",
+    ["Essence Target Trứng"] = "Mục Tiêu Trứng Nhận Tinh Chất",
+    ["Only use the essence on these eggs (empty = all)"] = "Chỉ dùng tinh chất lên trứng này (trống = tất cả)",
+    ["Essence Priority"] = "Ưu Tiên Dùng Tinh Chất",
+    ["Which egg gets the essence first"] = "Trứng nào được ưu tiên nhận tinh chất trước",
+    ["Essence Skip Enchanted Eggs"] = "Bỏ Qua Trứng Đã Phù Phép",
+    ["Essence Skip Enchanted Trứng"] = "Bỏ Qua Trứng Đã Phù Phép",
+    ["Skip eggs that already got Enchanted, other mutations still get the essence"] = "Bỏ qua trứng đã phù phép, đột biến khác vẫn nhận tinh chất",
+
+    -- Chase Settings
     ["Chase Settings"] = "Cài Đặt Đuổi Đánh",
-    ["Chase Cài Đặt"] = "Cài Đặt Đuổi Đánh",
     ["Hit Tween Speed"] = "Tốc Độ Bay Đánh",
     ["Hit Max Speed"] = "Tốc Độ Đánh Tối Đa",
     ["Hit Lead"] = "Đón Đầu Đòn Đánh (Hit Lead)",
@@ -315,6 +345,10 @@ local MAP_VI = {
     ["Hit Player"] = "Chọn Người Cần Đánh",
     ["Hit Aura"] = "Vòng Đánh Tự Động (Hit Aura)",
     ["Instant Prompts"] = "Tương Tác Phím Nhanh (Instant E)",
+
+    -- Movement / Character
+    ["Movement"] = "Di Chuyển",
+    ["Character"] = "Nhân Vật",
     ["Speed Boost"] = "Tăng Tốc Chạy",
     ["Boost Speed"] = "Tốc Độ Tăng Tốc",
     ["Infinite Jump"] = "Nhảy Vô Hạn",
@@ -323,7 +357,10 @@ local MAP_VI = {
     ["Anti Ragdoll"] = "Chống Ngã (Anti Ragdoll)",
     ["Anti Trap"] = "Chống Bẫy (Anti Trap)",
     ["Traps from other players cannot catch you"] = "Bẫy của người khác không thể bắt được bạn",
+    ["Combat"] = "Chiến Đấu",
 
+    -- ESP
+    ["ESP"] = "Định Vị (ESP)",
     ["ESP Eggs"] = "ESP Trứng",
     ["ESP Fixed Size"] = "Cỡ ESP Cố Định",
     ["ESP Own Base Eggs"] = "Hiện Trứng Căn Cứ Mình",
@@ -340,6 +377,11 @@ local MAP_VI = {
     ["ESP Player Info"] = "Thông Tin ESP Người Chơi",
     ["ESP Player Size"] = "Cỡ ESP Người Chơi",
 
+    -- Predictor
+    ["Predictor"] = "Dự Đoán",
+    ["Egg Predictor"] = "Dự Đoán Trứng",
+    ["Lab Predictor"] = "Dự Đoán Phòng Lab",
+    ["Fuse Predictor"] = "Dự Đoán Dung Hợp",
     ["Search eggs..."] = "Tìm kiếm trứng...",
     ["FLY TO EGG"] = "BAY ĐẾN TRỨNG",
     ["Biohazard Pets"] = "Pet Phóng Xạ (Biohazard)",
@@ -350,7 +392,10 @@ local MAP_VI = {
     ["Load 3 pets of the same species to see the result odds"] = "Đặt 3 pet cùng loài vào máy để xem tỉ lệ kết quả",
     ["Sort By"] = "Sắp Xếp Theo",
     ["Preview Card"] = "Thẻ Xem Trước",
+    ["Discord Webhook"] = "Cài Đặt Webhook Discord",
 
+    -- Progression
+    ["Auto Progression"] = "Tự Động Tiến Trình",
     ["Auto Buy Trail"] = "Tự Mua Vệt Sáng (Trail)",
     ["Automatically buy available trails when affordable"] = "Tự động mua vệt sáng có sẵn khi đủ tiền",
     ["Auto Upgrade Base"] = "Tự Nâng Cấp Căn Cứ",
@@ -362,7 +407,7 @@ local MAP_VI = {
     ["Auto Claim Index"] = "Tự Nhận Thưởng Sách Pet",
     ["Claim index rewards as soon as they unlock"] = "Tự động nhận thưởng sách ngay khi mở khóa",
 
-    ["Auto Load Script"] = "Tự Động Nạp Script",
+    -- Server
     ["Server Hop Mode"] = "Chế Độ Đổi Server",
     ["Server Hop"] = "Đổi Server",
     ["Job ID"] = "Mã Phòng (Job ID)",
@@ -371,17 +416,6 @@ local MAP_VI = {
     ["Copy Current Job ID"] = "Chép Job ID Hiện Tại",
     ["Rejoin Server"] = "Vào Lại Server",
     ["Auto Rejoin When Disconnect"] = "Tự Kết Nối Lại Khi Mất Mạng",
-
-    ["FPS Cap"] = "Giới Hạn FPS",
-    ["Optimizer"] = "Tối Ưu Hóa (Giảm Lag)",
-    ["Strip shadows, textures and effects for the highest FPS"] = "Xóa bóng, bề mặt và hiệu ứng để đạt FPS tối đa",
-    ["FPS and Ping"] = "Hiện FPS & Ping",
-    ["FPS and Ping Size"] = "Kích Cỡ FPS & Ping",
-    ["Disable 3D Render"] = "Tắt Đồ Họa 3D",
-    ["Farm HUD"] = "Bảng Cày Cuốc (Farm HUD)",
-    ["Drag any panel to place it where you like"] = "Kéo bất kỳ bảng nào đến vị trí bạn muốn",
-    ["Anti AFK"] = "Chống Treo Máy (Anti AFK)",
-
     ["Joins new servers to find eggs that match the filters below"] = "Tự đổi server để tìm trứng khớp bộ lọc bên dưới",
     ["Turn on Auto Hop to start hunting"] = "Bật Tự Đổi Server để bắt đầu săn trứng",
     ["Hop Mode"] = "Chế Độ Đổi Server",
@@ -398,25 +432,38 @@ local MAP_VI = {
     ["Ping @everyone"] = "Tag @everyone",
     ["Notify Stolen Eggs"] = "Báo Cáo Cướp Trứng",
     ["Post every egg you bring home"] = "Gửi thông báo mỗi quả trứng mang về thành công",
+
+    -- Performance / Utility
+    ["Performance"] = "Hiệu Năng",
+    ["Utility"] = "Tiện Ích",
+    ["FPS Cap"] = "Giới Hạn FPS",
+    ["Optimizer"] = "Tối Ưu Hóa (Giảm Lag)",
+    ["Strip shadows, textures and effects for the highest FPS"] = "Xóa bóng, bề mặt và hiệu ứng để đạt FPS tối đa",
+    ["FPS and Ping"] = "Hiện FPS & Ping",
+    ["FPS and Ping Size"] = "Kích Cỡ FPS & Ping",
+    ["Disable 3D Render"] = "Tắt Đồ Họa 3D",
+    ["Farm HUD"] = "Bảng Cày Cuốc (Farm HUD)",
+    ["Drag any panel to place it where you like"] = "Kéo bất kỳ bảng nào đến vị trí bạn muốn",
+    ["Anti AFK"] = "Chống Treo Máy (Anti AFK)",
+    ["Auto Load Script"] = "Tự Động Nạp Script",
+
+    -- Egg Finder
+    ["Egg Finder"] = "Dò Tìm Trứng",
+    ["Quick Bar 1"] = "Thanh Phím Nhanh 1",
+    ["Quick Bar 2"] = "Thanh Phím Nhanh 2",
+
+    -- Wisp
+    ["Auto Wisp"] = "Tự Động Nhặt Wisp",
+    ["Auto Banjo Cricket"] = "Tự Động Bắt Dế Banjo",
+
+    -- Popup cảnh báo Instant Steal V2
+    ["Cuớp Siêu Tốc (Instant Steal) V2 may not work well below 40 FPS or above 200 ms ping."] = "Cướp Siêu Tốc (Instant Steal) V2 có thể hoạt động không tốt dưới 40 FPS hoặc ping trên 200 ms.",
+    ["Your FPS"] = "FPS của bạn",
+    ["Your Ping"] = "Ping của bạn",
+    ["ms"] = "ms",
+
+    -- Đếm số
     ["selected"] = "đã chọn"
-    -- === CẬP NHẬT TỪ ẢNH MỚI (INSTANT STEAL V2) ===
-["Đồng Hành Wisp"] = "Đồng Hành Wisp",
-["Cuớp Siêu Tốc (Instant Steal)"] = "Cướp Siêu Tốc (Instant Steal)",
-["Cuớp Siêu Tốc (Instant Steal) V2"] = "Cướp Siêu Tốc (Instant Steal) V2",
-["Chuyển trứng về căn cứ trong vài giây (cần đủ tốc độ)"] = "Chuyển trứng về căn cứ trong vài giây (cần đủ tốc độ)",
-["Only works in Titan Temple, Light Dark and Enchanted Forest"] = "Chỉ hoạt động ở Đền Titan, Rừng Sáng Tối và Rừng Phù Phép",
-["Other Zones Delivery"] = "Giao Trứng Khu Vực Khác",
-["How eggs outside Titan Temple, Light Dark and Enchanted Forest come home"] = "Cách trứng ngoài Đền Titan, Rừng Sáng Tối và Rừng Phù Phép được mang về",
-["Delivers the same way as Cuớp Siêu Tốc (Instant Steal) V2 instead of using steps"] = "Giao trứng giống như Cướp Siêu Tốc V2 thay vì dùng từng bước",
-["Số Bước Cướp Siêu Tốc"] = "Số Bước Cướp Siêu Tốc",
-["Càng nhiều bước càng an toàn nhưng bay chậm hơn"] = "Càng nhiều bước càng an toàn nhưng bay chậm hơn",
-["Steal eggs of the chosen rarity and every rarity above it"] = "Cướp trứng từ độ hiếm đã chọn trở lên",
-["Giá Trị Cướp Min"] = "Giá Trị Cướp Min",
-["12 đã chọn"] = "12 đã chọn",
-["Cuớp Siêu Tốc (Instant Steal) V2 may not work well below 40 FPS or above 200 ms ping."] = "Cướp Siêu Tốc (Instant Steal) V2 có thể hoạt động không tốt dưới 40 FPS hoặc ping trên 200 ms.",
-["Your FPS"] = "FPS của bạn",
-["Your Ping"] = "Ping của bạn",
-["ms"] = "ms",
 }
 
 -- =========================================================
@@ -432,6 +479,7 @@ end
 
 local translateCache = {}
 
+-- Bỏ qua text động (số, tiền, %, thời gian)
 local SKIP_PATTERNS = {
     "^[%d%p%s]+$",
     "^%$[%d%.]+[KMBT]?$",
@@ -455,27 +503,27 @@ local function translateText(text)
     local cached = translateCache[text]
     if cached ~= nil then return cached end
     
-    -- ✅ ƯU TIÊN 1: EXACT MATCH (khớp chính xác toàn bộ text)
+    -- ƯU TIÊN 1: EXACT MATCH (khớp chính xác toàn bộ text)
     local exact = EXACT_MATCH_VI[text]
     if exact then
         translateCache[text] = exact
         return exact
     end
     
-    -- ✅ ƯU TIÊN 2: MAP_VI EXACT (khớp chính xác)
+    -- ƯU TIÊN 2: MAP_VI EXACT (khớp chính xác)
     local mapped = MAP_VI[text]
     if mapped then
         translateCache[text] = mapped
         return mapped
     end
     
-    -- Skip text động (số, tiền, thời gian)
+    -- Skip text động
     if shouldSkip(text) then
         translateCache[text] = text
         return text
     end
     
-    -- ✅ ƯU TIÊN 3: FALLBACK - thay thế cụm từ trong câu dài
+    -- ƯU TIÊN 3: FALLBACK - thay thế cụm từ trong câu dài
     local out = text
     for _, en in ipairs(sortedKeys) do
         local vi = MAP_VI[en]
