@@ -1,15 +1,16 @@
 -- =========================================================
--- CHILLI HUB TRANSLATOR V11.5.2 FINAL
--- Icon: 🌶️ | Tiêu đề: CHILLI HUB VIỆT HÓA V4
--- POLL_INTERVAL: 0.5s (MƯỢT - ưu tiên hiệu năng)
--- Cơ chế: Polling + Smart Hook (chống flicker cho label bị revert)
--- UI: Compact Premium (360×180) + Glassmorphism
+-- CHILLI HUB TRANSLATOR V11.4 FINAL
+-- Tích hợp: Racing Event, Shooting Star, Capture Egg, Admin Treadmill,
+-- Instant Steal V2, Lab, Mech, Butterfly Bloom, Essence
+-- Cơ chế: Polling 0.5s - Không hook event - Chống lag tuyệt đối
+-- Ưu tiên: EXACT_MATCH_VI → MAP_VI (exact) → MAP_VI (gsub fallback)
+-- UI: Glassmorphism Premium với animation Back-Ease
 -- =========================================================
+
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
-
 local SCRIPT_URL = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"
 
 -- =========================================================
@@ -160,7 +161,7 @@ local MAP_VI = {
     -- Admin Treadmill
     ["Admin Treadmill"] = "Máy Chạy Bộ Admin",
 
-    -- Auto Steal
+    -- Auto Steal (Tự Động Cướp)
     ["Auto Steal"] = "Tự Động Cướp Trứng",
     ["Tự Động Cướp Trứng"] = "Tự Động Cướp Trứng",
     ["Tự Động Cướp"] = "Tự Động Cướp",
@@ -443,9 +444,9 @@ local MAP_VI = {
     ["Auto Buy Trail"] = "Tự Mua Vệt Sáng (Trail)",
     ["Automatically buy available trails when affordable"] = "Tự động mua vệt sáng có sẵn khi đủ tiền",
     ["Auto Upgrade Base"] = "Tự Nâng Cấp Căn Cứ",
-    ["Automatically upgrade base when money is available"] = "Tự động nâng cấp căn cứ khi có tiền",
+    ["Automatically upgrade base when money is available"] = "Tự động nâng cấp căn cứ khi đủ tiền",
     ["Auto Upgrade Treadmill"] = "Tự Nâng Cấp Máy Tập",
-    ["Automatically upgrade treadmill when money is available"] = "Tự động nâng cấp máy tập khi có tiền",
+    ["Automatically upgrade treadmill when money is available"] = "Tự động nâng cấp máy tập khi đủ tiền",
     ["Auto Claim"] = "Tự Nhận Thưởng",
     ["Claim offline money & index rewards"] = "Nhận tiền tích lũy offline & thưởng sách pet",
     ["Auto Claim Index"] = "Tự Nhận Thưởng Sách Pet",
@@ -514,7 +515,9 @@ local MAP_VI = {
 -- HÀM DỊCH (EXACT MATCH TRƯỚC, FALLBACK MAP_VI)
 -- =========================================================
 local sortedKeys = {}
-for k in pairs(MAP_VI) do table.insert(sortedKeys, k) end
+for k in pairs(MAP_VI) do
+    table.insert(sortedKeys, k)
+end
 table.sort(sortedKeys, function(a,b) return #a > #b end)
 
 local escapePattern = function(s)
@@ -546,28 +549,28 @@ local function translateText(text)
     -- Cache hit
     local cached = translateCache[text]
     if cached ~= nil then return cached end
-    
-    -- ƯU TIÊN 1: EXACT MATCH
+
+    -- ƯU TIÊN 1: EXACT MATCH (khớp chính xác toàn bộ text)
     local exact = EXACT_MATCH_VI[text]
     if exact then
         translateCache[text] = exact
         return exact
     end
-    
-    -- ƯU TIÊN 2: MAP_VI EXACT
+
+    -- ƯU TIÊN 2: MAP_VI EXACT (khớp chính xác)
     local mapped = MAP_VI[text]
     if mapped then
         translateCache[text] = mapped
         return mapped
     end
-    
+
     -- Skip text động
     if shouldSkip(text) then
         translateCache[text] = text
         return text
     end
-    
-    -- ƯU TIÊN 3: FALLBACK
+
+    -- ƯU TIÊN 3: FALLBACK - thay thế cụm từ trong câu dài
     local out = text
     for _, en in ipairs(sortedKeys) do
         local vi = MAP_VI[en]
@@ -576,68 +579,43 @@ local function translateText(text)
             out = out:gsub(pat, vi)
         end
     end
-    
+
     translateCache[text] = out
     return out
 end
 
 -- =========================================================
--- POLLING ENGINE + SMART HOOK (V11.5.2 - POLL 0.5s)
+-- POLLING ENGINE (KHÔNG HOOK EVENT - CHỐNG LAG)
 -- =========================================================
 local translating = false
 local trackedObjects = {}
 
 local IGNORE_GUI_NAMES = {
-    ["Chat"] = true, ["Backpack"] = true, ["PlayerList"] = true,
-    ["BubbleChat"] = true, ["TouchGui"] = true, ["TouchControlFrame"] = true,
-    ["ControlFrame"] = true, ["Topbar"] = true, ["StarterGui"] = true,
+    ["Chat"] = true,
+    ["Backpack"] = true,
+    ["PlayerList"] = true,
+    ["BubbleChat"] = true,
+    ["TouchGui"] = true,
+    ["TouchControlFrame"] = true,
+    ["ControlFrame"] = true,
+    ["Topbar"] = true,
+    ["StarterGui"] = true,
     ["LangSelector"] = true,
 }
-
-local function translateAndApply(obj, entry)
-    if translating then return end
-    
-    local ok, cur = pcall(function() return obj.Text end)
-    if not ok or type(cur) ~= "string" or cur == "" then return end
-    
-    if cur == entry.lastTranslated then return end
-    if cur == entry.lastOriginal then return end
-    
-    entry.lastOriginal = cur
-    local new = translateText(cur)
-    
-    if new ~= cur then
-        translating = true
-        pcall(function() obj.Text = new end)
-        translating = false
-        entry.lastTranslated = new
-    else
-        entry.lastTranslated = cur
-    end
-end
 
 local function registerObject(obj)
     if not (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) then return end
     if obj:GetAttribute("ChilliTracked") then return end
     obj:SetAttribute("ChilliTracked", true)
-    
-    local entry = {
+    table.insert(trackedObjects, {
         obj = obj,
-        lastOriginal = nil,
-        lastTranslated = nil,
-        hooked = false,
-    }
-    table.insert(trackedObjects, entry)
-    
-    task.defer(function()
-        translateAndApply(obj, entry)
-    end)
+        lastText = nil,
+    })
 end
 
 local function scanGui(gui)
     if not gui:IsA("ScreenGui") then return end
     if IGNORE_GUI_NAMES[gui.Name] then return end
-    
     local descendants = gui:GetDescendants()
     for i, d in ipairs(descendants) do
         registerObject(d)
@@ -645,39 +623,33 @@ local function scanGui(gui)
     end
 end
 
--- ✅ POLL_INTERVAL = 0.5 (MƯỢT - ưu tiên hiệu năng)
 local POLL_INTERVAL = 0.5
-
 local function pollingLoop()
     while true do
         task.wait(POLL_INTERVAL)
+        if translating then continue end
+        translating = true
         
         for i = #trackedObjects, 1, -1 do
             local entry = trackedObjects[i]
             local obj = entry.obj
-            
             if not obj or not obj.Parent then
                 table.remove(trackedObjects, i)
                 continue
             end
             
             local ok, cur = pcall(function() return obj.Text end)
-            if ok and type(cur) == "string" and cur ~= "" then
-                -- Smart Hook: chỉ hook label bị revert
-                if cur == entry.lastOriginal and entry.lastTranslated and entry.lastTranslated ~= cur then
-                    if not entry.hooked then
-                        entry.hooked = true
-                        obj:GetPropertyChangedSignal("Text"):Connect(function()
-                            task.defer(function()
-                                translateAndApply(obj, entry)
-                            end)
-                        end)
-                    end
+            if ok and type(cur) == "string" and cur ~= "" and cur ~= entry.lastText then
+                local new = translateText(cur)
+                if new ~= cur then
+                    pcall(function() obj.Text = new end)
+                    entry.lastText = new
+                else
+                    entry.lastText = cur
                 end
-                
-                translateAndApply(obj, entry)
             end
         end
+        translating = false
     end
 end
 
@@ -685,11 +657,8 @@ end
 -- WATCHER
 -- =========================================================
 local function startWatching()
-    local targets = {
-        CoreGui,
-        Players.LocalPlayer:WaitForChild("PlayerGui")
-    }
-    
+    task.wait(3)
+    local targets = { CoreGui, Players.LocalPlayer:WaitForChild("PlayerGui") }
     for _, container in ipairs(targets) do
         if container then
             for _, gui in ipairs(container:GetChildren()) do
@@ -697,7 +666,6 @@ local function startWatching()
                     task.spawn(function() scanGui(gui) end)
                 end
             end
-            
             container.DescendantAdded:Connect(function(d)
                 if d:IsA("ScreenGui") and not IGNORE_GUI_NAMES[d.Name] then
                     task.defer(function() scanGui(d) end)
@@ -715,14 +683,11 @@ end
 local function fetchScript(url)
     local ok, res = pcall(function() return game:HttpGet(url) end)
     if ok and type(res) == "string" and #res > 0 then return res end
-    
     for _, name in ipairs({"request","http_request","syn_request"}) do
         local fn = _G[name]
         if type(fn) == "function" then
             local ok2, r = pcall(fn, {Url = url, Method = "GET"})
-            if ok2 and r and r.Body and #r.Body > 0 then
-                return r.Body
-            end
+            if ok2 and r and r.Body and #r.Body > 0 then return r.Body end
         end
     end
     return nil
