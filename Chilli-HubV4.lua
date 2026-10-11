@@ -1,6 +1,6 @@
 -- =========================================================
--- CHILLI HUB TRANSLATOR V11.4.1 FINAL (ANTI-FLICKER)
--- Cơ chế: Polling 0.15s - Không hook event - Chống lag + chống nhấp nháy
+-- CHILLI HUB TRANSLATOR V11.4.2 FINAL (SMART HYBRID ANTI-FLICKER)
+-- Cơ chế: Polling 0.1s + Hook thông minh (chỉ hook label bị revert)
 -- Ưu tiên: EXACT_MATCH_VI → MAP_VI (exact) → MAP_VI (gsub fallback)
 -- UI: Glassmorphism Premium với animation Back-Ease
 -- =========================================================
@@ -442,9 +442,9 @@ local MAP_VI = {
     ["Auto Buy Trail"] = "Tự Mua Vệt Sáng (Trail)",
     ["Automatically buy available trails when affordable"] = "Tự động mua vệt sáng có sẵn khi đủ tiền",
     ["Auto Upgrade Base"] = "Tự Nâng Cấp Căn Cứ",
-    ["Automatically upgrade base when money is available"] = "Tự động nâng cấp căn cứ khi đủ tiền",
+    ["Automatically upgrade base when money is available"] = "Tự động nâng cấp căn cứ khi có tiền",
     ["Auto Upgrade Treadmill"] = "Tự Nâng Cấp Máy Tập",
-    ["Automatically upgrade treadmill when money is available"] = "Tự động nâng cấp máy tập khi đủ tiền",
+    ["Automatically upgrade treadmill when money is available"] = "Tự động nâng cấp máy tập khi có tiền",
     ["Auto Claim"] = "Tự Nhận Thưởng",
     ["Claim offline money & index rewards"] = "Nhận tiền tích lũy offline & thưởng sách pet",
     ["Auto Claim Index"] = "Tự Nhận Thưởng Sách Pet",
@@ -581,7 +581,7 @@ local function translateText(text)
 end
 
 -- =========================================================
--- POLLING ENGINE (CHỐNG FLICKER - V11.4.1)
+-- POLLING ENGINE + SMART HOOK (CHỐNG FLICKER - V11.4.2)
 -- =========================================================
 local translating = false
 local trackedObjects = {}
@@ -593,16 +593,49 @@ local IGNORE_GUI_NAMES = {
     ["LangSelector"] = true,
 }
 
+-- ✅ Hàm dịch + ghi đè ngay lập tức (dùng chung cho cả polling và hook)
+local function translateAndApply(obj, entry)
+    if translating then return end
+    
+    local ok, cur = pcall(function() return obj.Text end)
+    if not ok or type(cur) ~= "string" or cur == "" then return end
+    
+    -- Bỏ qua nếu text hiện tại đã là bản dịch
+    if cur == entry.lastTranslated then return end
+    
+    -- Nếu text không đổi so với lần trước → bỏ qua
+    if cur == entry.lastOriginal then return end
+    
+    entry.lastOriginal = cur
+    local new = translateText(cur)
+    
+    if new ~= cur then
+        translating = true
+        pcall(function() obj.Text = new end)
+        translating = false
+        entry.lastTranslated = new
+    else
+        entry.lastTranslated = cur
+    end
+end
+
 local function registerObject(obj)
     if not (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) then return end
     if obj:GetAttribute("ChilliTracked") then return end
     obj:SetAttribute("ChilliTracked", true)
     
-    table.insert(trackedObjects, {
+    local entry = {
         obj = obj,
-        lastOriginal = nil,   -- Text gốc từ script (chưa dịch)
-        lastTranslated = nil, -- Text đã dịch (để so sánh, chống flicker)
-    })
+        lastOriginal = nil,
+        lastTranslated = nil,
+        hooked = false, -- Đánh dấu đã gắn hook chưa
+    }
+    table.insert(trackedObjects, entry)
+    
+    -- Dịch ngay lần đầu
+    task.defer(function()
+        translateAndApply(obj, entry)
+    end)
 end
 
 local function scanGui(gui)
@@ -616,15 +649,12 @@ local function scanGui(gui)
     end
 end
 
--- ✅ GIẢM POLL_INTERVAL XUỐNG 0.15s ĐỂ BẮT KỊP SCRIPT GỐC
-local POLL_INTERVAL = 0.15
+-- ✅ POLLING 0.1s
+local POLL_INTERVAL = 0.1
 
 local function pollingLoop()
     while true do
         task.wait(POLL_INTERVAL)
-        
-        if translating then continue end
-        translating = true
         
         for i = #trackedObjects, 1, -1 do
             local entry = trackedObjects[i]
@@ -637,30 +667,22 @@ local function pollingLoop()
             
             local ok, cur = pcall(function() return obj.Text end)
             if ok and type(cur) == "string" and cur ~= "" then
-                -- ✅ BỎ QUA nếu text hiện tại ĐÃ LÀ bản dịch (không dịch lại)
-                if cur == entry.lastTranslated then
-                    continue
+                -- ✅ Nếu phát hiện label bị "revert" về text gốc → GẮN HOOK
+                if cur == entry.lastOriginal and entry.lastTranslated and entry.lastTranslated ~= cur then
+                    if not entry.hooked then
+                        entry.hooked = true
+                        obj:GetPropertyChangedSignal("Text"):Connect(function()
+                            task.defer(function()
+                                translateAndApply(obj, entry)
+                            end)
+                        end)
+                    end
                 end
                 
-                -- ✅ BỎ QUA nếu text không đổi so với lần trước
-                if cur == entry.lastOriginal then
-                    continue
-                end
-                
-                -- Text mới → dịch
-                entry.lastOriginal = cur
-                local new = translateText(cur)
-                
-                if new ~= cur then
-                    pcall(function() obj.Text = new end)
-                    entry.lastTranslated = new
-                else
-                    entry.lastTranslated = cur
-                end
+                -- Dịch nếu cần
+                translateAndApply(obj, entry)
             end
         end
-        
-        translating = false
     end
 end
 
@@ -1025,7 +1047,7 @@ local function run(lang)
         task.spawn(fn)
         
         if lang == "vi" then
-            -- ✅ Đợi 3 giây cho Chilli Hub load xong, rồi mới hook
+            -- Đợi 3 giây cho Chilli Hub load xong, rồi mới hook
             task.wait(3)
             task.spawn(startWatching)
             task.spawn(pollingLoop)
