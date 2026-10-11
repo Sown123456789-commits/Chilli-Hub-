@@ -1,8 +1,9 @@
 -- =========================================================
--- CHILLI HUB TRANSLATOR V11.5.1 FINAL
+-- CHILLI HUB TRANSLATOR V11.5.2 FINAL
 -- Icon: 🌶️ | Tiêu đề: CHILLI HUB VIỆT HÓA V4
--- Cơ chế: Polling 0.1s + Smart Hook (chống flicker)
--- UI: Compact Premium (340×180) + Glassmorphism
+-- POLL_INTERVAL: 0.5s (MƯỢT - ưu tiên hiệu năng)
+-- Cơ chế: Polling + Smart Hook (chống flicker cho label bị revert)
+-- UI: Compact Premium (360×180) + Glassmorphism
 -- =========================================================
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
@@ -546,14 +547,14 @@ local function translateText(text)
     local cached = translateCache[text]
     if cached ~= nil then return cached end
     
-    -- ƯU TIÊN 1: EXACT MATCH (khớp chính xác toàn bộ text)
+    -- ƯU TIÊN 1: EXACT MATCH
     local exact = EXACT_MATCH_VI[text]
     if exact then
         translateCache[text] = exact
         return exact
     end
     
-    -- ƯU TIÊN 2: MAP_VI EXACT (khớp chính xác)
+    -- ƯU TIÊN 2: MAP_VI EXACT
     local mapped = MAP_VI[text]
     if mapped then
         translateCache[text] = mapped
@@ -566,7 +567,7 @@ local function translateText(text)
         return text
     end
     
-    -- ƯU TIÊN 3: FALLBACK - thay thế cụm từ trong câu dài
+    -- ƯU TIÊN 3: FALLBACK
     local out = text
     for _, en in ipairs(sortedKeys) do
         local vi = MAP_VI[en]
@@ -581,7 +582,7 @@ local function translateText(text)
 end
 
 -- =========================================================
--- POLLING ENGINE + SMART HOOK (CHỐNG FLICKER)
+-- POLLING ENGINE + SMART HOOK (V11.5.2 - POLL 0.5s)
 -- =========================================================
 local translating = false
 local trackedObjects = {}
@@ -644,7 +645,8 @@ local function scanGui(gui)
     end
 end
 
-local POLL_INTERVAL = 0.1
+-- ✅ POLL_INTERVAL = 0.5 (MƯỢT - ưu tiên hiệu năng)
+local POLL_INTERVAL = 0.5
 
 local function pollingLoop()
     while true do
@@ -661,7 +663,7 @@ local function pollingLoop()
             
             local ok, cur = pcall(function() return obj.Text end)
             if ok and type(cur) == "string" and cur ~= "" then
-                -- Smart Hook: nếu label bị revert → gắn hook
+                -- Smart Hook: chỉ hook label bị revert
                 if cur == entry.lastOriginal and entry.lastTranslated and entry.lastTranslated ~= cur then
                     if not entry.hooked then
                         entry.hooked = true
@@ -727,7 +729,7 @@ local function fetchScript(url)
 end
 
 -- =========================================================
--- UI CHỌN NGÔN NGỮ (COMPACT PREMIUM V11.5.1)
+-- UI CHỌN NGÔN NGỮ (COMPACT PREMIUM V11.5.2)
 -- Icon: 🌶️ | Tiêu đề: CHILLI HUB VIỆT HÓA V4
 -- =========================================================
 local gui = Instance.new("ScreenGui")
@@ -798,7 +800,7 @@ titleIcon.Text = "🌶️"
 titleIcon.Font = Enum.Font.GothamBold
 titleIcon.TextSize = 18
 
--- Tiêu đề mới
+-- Tiêu đề
 local titleText = Instance.new("TextLabel", header)
 titleText.Size = UDim2.new(1, -100, 1, 0)
 titleText.Position = UDim2.new(0, 44, 0, 0)
