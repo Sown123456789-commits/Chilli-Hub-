@@ -1,8 +1,6 @@
 -- =========================================================
--- CHILLI HUB TRANSLATOR V11.4 FINAL
--- Tích hợp: Racing Event, Shooting Star, Capture Egg, Admin Treadmill,
--- Instant Steal V2, Lab, Mech, Butterfly Bloom, Essence
--- Cơ chế: Polling 0.5s - Không hook event - Chống lag tuyệt đối
+-- CHILLI HUB TRANSLATOR V11.4.1 FINAL (ANTI-FLICKER)
+-- Cơ chế: Polling 0.15s - Không hook event - Chống lag + chống nhấp nháy
 -- Ưu tiên: EXACT_MATCH_VI → MAP_VI (exact) → MAP_VI (gsub fallback)
 -- UI: Glassmorphism Premium với animation Back-Ease
 -- =========================================================
@@ -583,7 +581,7 @@ local function translateText(text)
 end
 
 -- =========================================================
--- POLLING ENGINE (KHÔNG HOOK EVENT - CHỐNG LAG)
+-- POLLING ENGINE (CHỐNG FLICKER - V11.4.1)
 -- =========================================================
 local translating = false
 local trackedObjects = {}
@@ -602,7 +600,8 @@ local function registerObject(obj)
     
     table.insert(trackedObjects, {
         obj = obj,
-        lastText = nil,
+        lastOriginal = nil,   -- Text gốc từ script (chưa dịch)
+        lastTranslated = nil, -- Text đã dịch (để so sánh, chống flicker)
     })
 end
 
@@ -617,7 +616,8 @@ local function scanGui(gui)
     end
 end
 
-local POLL_INTERVAL = 0.5
+-- ✅ GIẢM POLL_INTERVAL XUỐNG 0.15s ĐỂ BẮT KỊP SCRIPT GỐC
+local POLL_INTERVAL = 0.15
 
 local function pollingLoop()
     while true do
@@ -636,13 +636,26 @@ local function pollingLoop()
             end
             
             local ok, cur = pcall(function() return obj.Text end)
-            if ok and type(cur) == "string" and cur ~= "" and cur ~= entry.lastText then
+            if ok and type(cur) == "string" and cur ~= "" then
+                -- ✅ BỎ QUA nếu text hiện tại ĐÃ LÀ bản dịch (không dịch lại)
+                if cur == entry.lastTranslated then
+                    continue
+                end
+                
+                -- ✅ BỎ QUA nếu text không đổi so với lần trước
+                if cur == entry.lastOriginal then
+                    continue
+                end
+                
+                -- Text mới → dịch
+                entry.lastOriginal = cur
                 local new = translateText(cur)
+                
                 if new ~= cur then
                     pcall(function() obj.Text = new end)
-                    entry.lastText = new
+                    entry.lastTranslated = new
                 else
-                    entry.lastText = cur
+                    entry.lastTranslated = cur
                 end
             end
         end
@@ -655,8 +668,6 @@ end
 -- WATCHER
 -- =========================================================
 local function startWatching()
-    task.wait(3)
-    
     local targets = {
         CoreGui,
         Players.LocalPlayer:WaitForChild("PlayerGui")
@@ -1014,6 +1025,8 @@ local function run(lang)
         task.spawn(fn)
         
         if lang == "vi" then
+            -- ✅ Đợi 3 giây cho Chilli Hub load xong, rồi mới hook
+            task.wait(3)
             task.spawn(startWatching)
             task.spawn(pollingLoop)
         end
