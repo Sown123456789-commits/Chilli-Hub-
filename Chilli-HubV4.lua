@@ -1,8 +1,8 @@
 -- =========================================================
--- CHILLI HUB TRANSLATOR V11.4.2 FINAL (SMART HYBRID ANTI-FLICKER)
--- Cơ chế: Polling 0.1s + Hook thông minh (chỉ hook label bị revert)
--- Ưu tiên: EXACT_MATCH_VI → MAP_VI (exact) → MAP_VI (gsub fallback)
--- UI: Glassmorphism Premium với animation Back-Ease
+-- CHILLI HUB TRANSLATOR V11.5.1 FINAL
+-- Icon: 🌶️ | Tiêu đề: CHILLI HUB VIỆT HÓA V4
+-- Cơ chế: Polling 0.1s + Smart Hook (chống flicker)
+-- UI: Compact Premium (340×180) + Glassmorphism
 -- =========================================================
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
@@ -16,7 +16,7 @@ local SCRIPT_URL = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chil
 -- =========================================================
 local EXACT_MATCH_VI = {
     -- Chung
-    ["Chilli Hub"] = "Chilli Hub Việt Hoá V4",
+    ["Chilli Hub"] = "Chilli Hub V3",
     ["Hop"] = "Đổi Server",
     ["Join"] = "Vào Phòng",
     ["Copy"] = "Sao Chép",
@@ -109,7 +109,7 @@ local EXACT_MATCH_VI = {
 -- =========================================================
 local MAP_VI = {
     -- Tab chính
-    ["Chilli Hub"] = "Chilli Hub Việt Hóa V4",
+    ["Chilli Hub"] = "Chilli Hub V3",
     ["Farm"] = "Cày Cuốc",
     ["Player"] = "Người Chơi",
     ["Predictor"] = "Dự Đoán",
@@ -159,7 +159,7 @@ local MAP_VI = {
     -- Admin Treadmill
     ["Admin Treadmill"] = "Máy Chạy Bộ Admin",
 
-    -- Auto Steal (Tự Động Cướp)
+    -- Auto Steal
     ["Auto Steal"] = "Tự Động Cướp Trứng",
     ["Tự Động Cướp Trứng"] = "Tự Động Cướp Trứng",
     ["Tự Động Cướp"] = "Tự Động Cướp",
@@ -581,7 +581,7 @@ local function translateText(text)
 end
 
 -- =========================================================
--- POLLING ENGINE + SMART HOOK (CHỐNG FLICKER - V11.4.2)
+-- POLLING ENGINE + SMART HOOK (CHỐNG FLICKER)
 -- =========================================================
 local translating = false
 local trackedObjects = {}
@@ -593,17 +593,13 @@ local IGNORE_GUI_NAMES = {
     ["LangSelector"] = true,
 }
 
--- ✅ Hàm dịch + ghi đè ngay lập tức (dùng chung cho cả polling và hook)
 local function translateAndApply(obj, entry)
     if translating then return end
     
     local ok, cur = pcall(function() return obj.Text end)
     if not ok or type(cur) ~= "string" or cur == "" then return end
     
-    -- Bỏ qua nếu text hiện tại đã là bản dịch
     if cur == entry.lastTranslated then return end
-    
-    -- Nếu text không đổi so với lần trước → bỏ qua
     if cur == entry.lastOriginal then return end
     
     entry.lastOriginal = cur
@@ -628,11 +624,10 @@ local function registerObject(obj)
         obj = obj,
         lastOriginal = nil,
         lastTranslated = nil,
-        hooked = false, -- Đánh dấu đã gắn hook chưa
+        hooked = false,
     }
     table.insert(trackedObjects, entry)
     
-    -- Dịch ngay lần đầu
     task.defer(function()
         translateAndApply(obj, entry)
     end)
@@ -649,7 +644,6 @@ local function scanGui(gui)
     end
 end
 
--- ✅ POLLING 0.1s
 local POLL_INTERVAL = 0.1
 
 local function pollingLoop()
@@ -667,7 +661,7 @@ local function pollingLoop()
             
             local ok, cur = pcall(function() return obj.Text end)
             if ok and type(cur) == "string" and cur ~= "" then
-                -- ✅ Nếu phát hiện label bị "revert" về text gốc → GẮN HOOK
+                -- Smart Hook: nếu label bị revert → gắn hook
                 if cur == entry.lastOriginal and entry.lastTranslated and entry.lastTranslated ~= cur then
                     if not entry.hooked then
                         entry.hooked = true
@@ -679,7 +673,6 @@ local function pollingLoop()
                     end
                 end
                 
-                -- Dịch nếu cần
                 translateAndApply(obj, entry)
             end
         end
@@ -734,7 +727,8 @@ local function fetchScript(url)
 end
 
 -- =========================================================
--- UI CHỌN NGÔN NGỮ (COMPACT PREMIUM DESIGN V11.5)
+-- UI CHỌN NGÔN NGỮ (COMPACT PREMIUM V11.5.1)
+-- Icon: 🌶️ | Tiêu đề: CHILLI HUB VIỆT HÓA V4
 -- =========================================================
 local gui = Instance.new("ScreenGui")
 gui.Name = "LangSelector"
@@ -748,7 +742,7 @@ do
     end
 end
 
--- Background mờ toàn màn hình
+-- Background mờ
 local backdrop = Instance.new("Frame", gui)
 backdrop.Size = UDim2.new(1, 0, 1, 0)
 backdrop.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
@@ -756,10 +750,10 @@ backdrop.BackgroundTransparency = 1
 backdrop.BorderSizePixel = 0
 backdrop.ZIndex = 1
 
--- Khung chính (NHỎ GỌN HƠN)
+-- Khung chính (compact 360×180)
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 340, 0, 180)
-frame.Position = UDim2.new(0.5, -170, 0.5, -90)
+frame.Size = UDim2.new(0, 360, 0, 180)
+frame.Position = UDim2.new(0.5, -180, 0.5, -90)
 frame.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
 frame.BorderSizePixel = 0
 frame.Active = true
@@ -774,13 +768,12 @@ frameGradient.Rotation = 135
 
 Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 14)
 
--- Glow stroke nhẹ
 local glowStroke = Instance.new("UIStroke", frame)
 glowStroke.Color = Color3.fromRGB(255, 80, 80)
 glowStroke.Thickness = 1
 glowStroke.Transparency = 0.4
 
--- Shadow layer
+-- Shadow
 local shadow = Instance.new("Frame", gui)
 shadow.Size = frame.Size
 shadow.Position = frame.Position
@@ -790,32 +783,33 @@ shadow.BorderSizePixel = 0
 shadow.ZIndex = 1
 Instance.new("UICorner", shadow).CornerRadius = UDim.new(0, 16)
 
--- Header (compact)
+-- Header
 local header = Instance.new("Frame", frame)
 header.Size = UDim2.new(1, 0, 0, 40)
 header.Position = UDim2.new(0, 0, 0, 0)
 header.BackgroundTransparency = 1
 
--- Icon + tiêu đề
+-- Icon ớt 🌶️
 local titleIcon = Instance.new("TextLabel", header)
 titleIcon.Size = UDim2.new(0, 30, 1, 0)
 titleIcon.Position = UDim2.new(0, 14, 0, 0)
 titleIcon.BackgroundTransparency = 1
-titleIcon.Text = "🌐"
+titleIcon.Text = "🌶️"
 titleIcon.Font = Enum.Font.GothamBold
 titleIcon.TextSize = 18
 
+-- Tiêu đề mới
 local titleText = Instance.new("TextLabel", header)
 titleText.Size = UDim2.new(1, -100, 1, 0)
 titleText.Position = UDim2.new(0, 44, 0, 0)
 titleText.BackgroundTransparency = 1
-titleText.Text = "CHILLI HUB"
+titleText.Text = "CHILLI HUB VIỆT HÓA V4"
 titleText.TextColor3 = Color3.fromRGB(255, 100, 100)
 titleText.Font = Enum.Font.GothamBold
-titleText.TextSize = 15
+titleText.TextSize = 12
 titleText.TextXAlignment = Enum.TextXAlignment.Left
 
--- Nút đóng nhỏ gọn
+-- Nút đóng
 local closeBtn = Instance.new("TextButton", header)
 closeBtn.Size = UDim2.new(0, 24, 0, 24)
 closeBtn.Position = UDim2.new(1, -34, 0.5, -12)
@@ -857,7 +851,7 @@ dividerGradient.Transparency = NumberSequence.new({
     NumberSequenceKeypoint.new(1, 1),
 })
 
--- Subtitle nhỏ
+-- Subtitle
 local subtitle = Instance.new("TextLabel", frame)
 subtitle.Size = UDim2.new(1, -24, 0, 16)
 subtitle.Position = UDim2.new(0, 12, 0, 46)
@@ -867,7 +861,7 @@ subtitle.TextColor3 = Color3.fromRGB(140, 140, 160)
 subtitle.Font = Enum.Font.Gotham
 subtitle.TextSize = 11
 
--- Holder nút (2 nút nằm ngang)
+-- Holder nút
 local holder = Instance.new("Frame", frame)
 holder.Size = UDim2.new(1, -24, 0, 70)
 holder.Position = UDim2.new(0, 12, 0, 70)
@@ -878,7 +872,7 @@ lay.Padding = UDim.new(0, 10)
 lay.HorizontalAlignment = Enum.HorizontalAlignment.Center
 lay.VerticalAlignment = Enum.VerticalAlignment.Center
 
--- Hàm tạo nút compact
+-- Hàm tạo nút
 local function makeLangBtn(flagEmoji, langName, subName, color1, color2, onClick)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(0.5, -5, 1, 0)
@@ -902,7 +896,6 @@ local function makeLangBtn(flagEmoji, langName, subName, color1, color2, onClick
     btnStroke.Thickness = 1
     btnStroke.Transparency = 0.85
 
-    -- Cờ bên trái
     local flag = Instance.new("TextLabel", btn)
     flag.Size = UDim2.new(0, 34, 1, 0)
     flag.Position = UDim2.new(0, 8, 0, 0)
@@ -912,7 +905,6 @@ local function makeLangBtn(flagEmoji, langName, subName, color1, color2, onClick
     flag.TextSize = 22
     flag.TextColor3 = Color3.fromRGB(255, 255, 255)
 
-    -- Tên chính
     local nameLabel = Instance.new("TextLabel", btn)
     nameLabel.Size = UDim2.new(1, -50, 0, 18)
     nameLabel.Position = UDim2.new(0, 44, 0, 12)
@@ -924,7 +916,6 @@ local function makeLangBtn(flagEmoji, langName, subName, color1, color2, onClick
     nameLabel.TextXAlignment = Enum.TextXAlignment.Left
     nameLabel.TextStrokeTransparency = 0.5
 
-    -- Tên phụ
     local subLabel = Instance.new("TextLabel", btn)
     subLabel.Size = UDim2.new(1, -50, 0, 14)
     subLabel.Position = UDim2.new(0, 44, 0, 30)
@@ -936,7 +927,6 @@ local function makeLangBtn(flagEmoji, langName, subName, color1, color2, onClick
     subLabel.TextTransparency = 0.25
     subLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- Hover
     btn.MouseEnter:Connect(function()
         TweenService:Create(btn, TweenInfo.new(0.15), {Size = UDim2.new(0.5, -2, 1.03, 0)}):Play()
         TweenService:Create(btnStroke, TweenInfo.new(0.15), {Transparency = 0.3, Thickness = 1.5}):Play()
@@ -946,7 +936,6 @@ local function makeLangBtn(flagEmoji, langName, subName, color1, color2, onClick
         TweenService:Create(btnStroke, TweenInfo.new(0.15), {Transparency = 0.85, Thickness = 1}):Play()
     end)
 
-    -- Click
     btn.MouseButton1Down:Connect(function()
         TweenService:Create(btn, TweenInfo.new(0.08), {Size = UDim2.new(0.5, -8, 0.96, 0)}):Play()
     end)
@@ -958,7 +947,7 @@ local function makeLangBtn(flagEmoji, langName, subName, color1, color2, onClick
     return btn
 end
 
--- Trạng thái (dòng nhỏ ở dưới cùng)
+-- Status
 local status = Instance.new("TextLabel", frame)
 status.Size = UDim2.new(1, -24, 0, 16)
 status.Position = UDim2.new(0, 12, 1, -24)
@@ -988,22 +977,22 @@ frame.InputChanged:Connect(function(input)
     end
 end)
 
--- Hiệu ứng xuất hiện (nhanh hơn)
+-- Hiệu ứng xuất hiện
 frame.Size = UDim2.new(0, 0, 0, 0)
 frame.Position = UDim2.new(0.5, 0, 0.5, 0)
 shadow.Size = UDim2.new(0, 0, 0, 0)
 shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
 TweenService:Create(backdrop, TweenInfo.new(0.25), {BackgroundTransparency = 0.55}):Play()
 TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-    Size = UDim2.new(0, 340, 0, 180),
-    Position = UDim2.new(0.5, -170, 0.5, -90)
+    Size = UDim2.new(0, 360, 0, 180),
+    Position = UDim2.new(0.5, -180, 0.5, -90)
 }):Play()
 TweenService:Create(shadow, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-    Size = UDim2.new(0, 340, 0, 180),
-    Position = UDim2.new(0.5, -170, 0.5, -90)
+    Size = UDim2.new(0, 360, 0, 180),
+    Position = UDim2.new(0.5, -180, 0.5, -90)
 }):Play()
 
--- Pulse glow nhẹ
+-- Pulse glow
 task.spawn(function()
     while frame.Parent do
         TweenService:Create(glowStroke, TweenInfo.new(2), {Transparency = 0.7}):Play()
@@ -1043,7 +1032,6 @@ local function run(lang)
         status.TextColor3 = Color3.fromRGB(100, 255, 150)
         task.wait(0.3)
         
-        -- Đóng UI mượt
         TweenService:Create(backdrop, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
         TweenService:Create(frame, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
             Size = UDim2.new(0, 0, 0, 0),
@@ -1070,7 +1058,7 @@ local function run(lang)
     end)
 end
 
--- Tạo 2 nút ngôn ngữ
+-- Tạo 2 nút
 makeLangBtn(
     "🇻🇳",
     "Tiếng Việt",
