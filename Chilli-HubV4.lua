@@ -1,6 +1,7 @@
 -- =========================================================
--- CHILLI HUB TRANSLATOR V11.3 FINAL
--- Tích hợp: Racing Event, Admin Abuse, Instant Steal V2, Lab, Mech, Butterfly Bloom, Essence
+-- CHILLI HUB TRANSLATOR V11.4 FINAL
+-- Tích hợp: Racing Event, Shooting Star, Capture Egg, Admin Treadmill,
+-- Instant Steal V2, Lab, Mech, Butterfly Bloom, Essence
 -- Cơ chế: Polling 0.5s - Không hook event - Chống lag tuyệt đối
 -- Ưu tiên: EXACT_MATCH_VI → MAP_VI (exact) → MAP_VI (gsub fallback)
 -- UI: Glassmorphism Premium với animation Back-Ease
@@ -53,12 +54,17 @@ local EXACT_MATCH_VI = {
     ["Turn On"] = "Bật Lên",
     ["WARNING"] = "CẢNH BÁO",
     ["selected"] = "đã chọn",
-    ["Racer"] = "Tay Đua",
-    ["Best Owned"] = "Tốt Nhất Đang Sở Hữu",
+
+    -- Racing Event
+    ["Racer"] = "Xe Đua",
+    ["Best Owned"] = "Tốt Nhất Sở Hữu",
     ["Search..."] = "Tìm Kiếm...",
     ["Racing Bat"] = "Gậy Đua",
     ["Cash Booster"] = "Tăng Tiền",
-    ["Admin Abuse"] = "Sự Kiện Admin",
+    ["Admin Abuse"] = "Lạm Quyền Admin",
+    ["Seahorse"] = "Cá ngựa",
+    ["Ostrich"] = "Đà điểu",
+    ["Shooting Star"] = "Sao Băng",
 
     -- Độ hiếm
     ["Cosmic"] = "Vũ Trụ (Cosmic)",
@@ -123,22 +129,36 @@ local MAP_VI = {
 
     -- Sự kiện
     ["Dr Scramble Lab & Mech"] = "Phòng Lab & Robot Scramble",
+    ["Dr Scramble Lab"] = "Phòng Thí Nghiệm Dr Scramble",
     ["Butterfly Bloom"] = "Sự Kiện Bắt Bướm",
     ["Wisp Companion"] = "Đồng Hành Wisp",
-    ["Racing Event"] = "Sự Kiện Đua",
-    ["Admin Abuse"] = "Sự Kiện Admin",
+    ["Racing Event"] = "Sự Kiện Đua Xe",
+    ["Admin Abuse"] = "Lạm Quyền Admin",
 
     -- Racing Event
     ["Auto Race"] = "Tự Động Đua",
     ["Race Speed"] = "Tốc Độ Đua",
-    ["Auto Use Power-Ups"] = "Tự Động Sử Dụng Vật Phẩm Hỗ Trợ",
+    ["Auto Use Power-Ups"] = "Tự Động Dùng Tăng Sức Mạnh",
     ["Race Rewards"] = "Phần Thưởng Đua",
-    ["Auto Equip Racer"] = "Tự Động Trang Bị Tay Đua",
-    ["Auto Buy Race Shop"] = "Tự Động Mua Vật Phẩm Cửa Hàng Đua",
+    ["Auto Equip Racer"] = "Tự Động Trang Bị Xe Đua",
+    ["Auto Buy Race Shop"] = "Tự Động Mua Cửa Hàng Đua",
     ["Race Shop Items"] = "Vật Phẩm Cửa Hàng Đua",
     ["Nitro Mutation"] = "Đột Biến Nitro",
     ["Treadmill Boost"] = "Tăng Tốc Máy Chạy Bộ",
     ["Tự Nhận Thưởng Race Rewards"] = "Tự Động Nhận Phần Thưởng Đua",
+
+    -- Shooting Star
+    ["Auto Catch Shooting Star"] = "Tự Động Bắt Sao Băng",
+
+    -- Capture The Egg
+    ["Capture The Egg"] = "Bắt Trứng",
+    ["Auto Capture Event Egg"] = "Tự Động Bắt Trứng Sự Kiện",
+    ["Take It From The Holder"] = "Lấy Từ Người Đang Giữ",
+    ["Hold Height"] = "Độ Cao Giữ",
+    ["Keep Away Distance"] = "Khoảng Cách Giữ An Toàn",
+
+    -- Admin Treadmill
+    ["Admin Treadmill"] = "Máy Chạy Bộ Admin",
 
     -- Auto Steal (Tự Động Cướp)
     ["Auto Steal"] = "Tự Động Cướp Trứng",
