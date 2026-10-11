@@ -149,6 +149,7 @@ local MAP_VI = {
 
     -- Shooting Star
     ["Auto Catch Shooting Star"] = "Tự Động Bắt Sao Băng",
+    ["Waiting for a shooting star"] = "Chờ đợi sao băng",
 
     -- Capture The Egg
     ["Capture The Egg"] = "Bắt Trứng",
