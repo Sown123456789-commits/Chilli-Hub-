@@ -16,7 +16,7 @@ local SCRIPT_URL = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chil
 -- =========================================================
 local EXACT_MATCH_VI = {
     -- Chung
-    ["Chilli Hub"] = "Chilli Hub V3",
+    ["Chilli Hub"] = "Chilli Hub Việt Hóa V4",
     ["Hop"] = "Đổi Server",
     ["Join"] = "Vào Phòng",
     ["Copy"] = "Sao Chép",
@@ -109,7 +109,7 @@ local EXACT_MATCH_VI = {
 -- =========================================================
 local MAP_VI = {
     -- Tab chính
-    ["Chilli Hub"] = "Chilli Hub V3",
+    ["Chilli Hub"] = "Chilli Hub Việt Hóa V4",
     ["Farm"] = "Cày Cuốc",
     ["Player"] = "Người Chơi",
     ["Predictor"] = "Dự Đoán",
