@@ -1,16 +1,15 @@
 -- =========================================================
--- CHILLI HUB TRANSLATOR V11.4 FINAL
--- Tích hợp: Racing Event, Shooting Star, Capture Egg, Admin Treadmill,
--- Instant Steal V2, Lab, Mech, Butterfly Bloom, Essence
--- Cơ chế: Polling 0.5s - Không hook event - Chống lag tuyệt đối
--- Ưu tiên: EXACT_MATCH_VI → MAP_VI (exact) → MAP_VI (gsub fallback)
--- UI: Glassmorphism Premium với animation Back-Ease
+-- CHILLI HUB TRANSLATOR V11.5 FINAL
+-- Icon: 🌶️ | Tiêu đề: CHILLI HUB VIỆT HÓA V4
+-- FIX: Dịch ngay khi mở tab lần đầu (hook từ đầu, không chờ revert)
+-- POLL_INTERVAL: 0.5s (MƯỢT)
+-- Cơ chế: Polling 0.5s + Hook ngay lập tức cho mọi label
 -- =========================================================
-
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+
 local SCRIPT_URL = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"
 
 -- =========================================================
@@ -54,6 +53,30 @@ local EXACT_MATCH_VI = {
     ["Turn On"] = "Bật Lên",
     ["WARNING"] = "CẢNH BÁO",
     ["selected"] = "đã chọn",
+    
+    -- Bổ sung từ thường gặp
+    ["Buy"] = "Mua",
+    ["Equip"] = "Trang Bị",
+    ["Unequip"] = "Bỏ Trang Bị",
+    ["Loading..."] = "Đang Tải...",
+    ["Are you sure?"] = "Bạn có chắc không?",
+    ["Yes"] = "Có",
+    ["No"] = "Không",
+    ["Back"] = "Quay Lại",
+    ["Next"] = "Tiếp",
+    ["Previous"] = "Trước",
+    ["Confirm"] = "Xác Nhận",
+    ["Submit"] = "Gửi",
+    ["Delete"] = "Xóa",
+    ["Edit"] = "Sửa",
+    ["Save"] = "Lưu",
+    ["Open"] = "Mở",
+    ["Show"] = "Hiện",
+    ["Hide"] = "Ẩn",
+    ["Account"] = "Tài Khoản",
+    ["Admin"] = "Quản Trị Viên",
+    ["Owner"] = "Chủ Sở Hữu",
+    ["Moderator"] = "Người Điều Hành",
 
     -- Racing Event
     ["Racer"] = "Xe Đua",
@@ -134,6 +157,7 @@ local MAP_VI = {
     ["Wisp Companion"] = "Đồng Hành Wisp",
     ["Racing Event"] = "Sự Kiện Đua Xe",
     ["Admin Abuse"] = "Lạm Quyền Admin",
+    ["Auto Mutation"] = "Tự Động Đột Biến",
 
     -- Racing Event
     ["Auto Race"] = "Tự Động Đua",
@@ -161,7 +185,7 @@ local MAP_VI = {
     -- Admin Treadmill
     ["Admin Treadmill"] = "Máy Chạy Bộ Admin",
 
-    -- Auto Steal (Tự Động Cướp)
+    -- Auto Steal
     ["Auto Steal"] = "Tự Động Cướp Trứng",
     ["Tự Động Cướp Trứng"] = "Tự Động Cướp Trứng",
     ["Tự Động Cướp"] = "Tự Động Cướp",
@@ -444,9 +468,9 @@ local MAP_VI = {
     ["Auto Buy Trail"] = "Tự Mua Vệt Sáng (Trail)",
     ["Automatically buy available trails when affordable"] = "Tự động mua vệt sáng có sẵn khi đủ tiền",
     ["Auto Upgrade Base"] = "Tự Nâng Cấp Căn Cứ",
-    ["Automatically upgrade base when money is available"] = "Tự động nâng cấp căn cứ khi đủ tiền",
+    ["Automatically upgrade base when money is available"] = "Tự động nâng cấp căn cứ khi có tiền",
     ["Auto Upgrade Treadmill"] = "Tự Nâng Cấp Máy Tập",
-    ["Automatically upgrade treadmill when money is available"] = "Tự động nâng cấp máy tập khi đủ tiền",
+    ["Automatically upgrade treadmill when money is available"] = "Tự động nâng cấp máy tập khi có tiền",
     ["Auto Claim"] = "Tự Nhận Thưởng",
     ["Claim offline money & index rewards"] = "Nhận tiền tích lũy offline & thưởng sách pet",
     ["Auto Claim Index"] = "Tự Nhận Thưởng Sách Pet",
@@ -550,14 +574,14 @@ local function translateText(text)
     local cached = translateCache[text]
     if cached ~= nil then return cached end
 
-    -- ƯU TIÊN 1: EXACT MATCH (khớp chính xác toàn bộ text)
+    -- ƯU TIÊN 1: EXACT MATCH
     local exact = EXACT_MATCH_VI[text]
     if exact then
         translateCache[text] = exact
         return exact
     end
 
-    -- ƯU TIÊN 2: MAP_VI EXACT (khớp chính xác)
+    -- ƯU TIÊN 2: MAP_VI EXACT
     local mapped = MAP_VI[text]
     if mapped then
         translateCache[text] = mapped
@@ -570,7 +594,7 @@ local function translateText(text)
         return text
     end
 
-    -- ƯU TIÊN 3: FALLBACK - thay thế cụm từ trong câu dài
+    -- ƯU TIÊN 3: FALLBACK
     local out = text
     for _, en in ipairs(sortedKeys) do
         local vi = MAP_VI[en]
@@ -585,7 +609,7 @@ local function translateText(text)
 end
 
 -- =========================================================
--- POLLING ENGINE (KHÔNG HOOK EVENT - CHỐNG LAG)
+-- POLLING ENGINE + HOOK NGAY TỪ ĐẦU (FIX "LẦN 1 CHƯA DỊCH")
 -- =========================================================
 local translating = false
 local trackedObjects = {}
@@ -603,14 +627,74 @@ local IGNORE_GUI_NAMES = {
     ["LangSelector"] = true,
 }
 
+-- Hàm dịch + ghi đè
+local function translateAndApply(obj, entry)
+    if translating then return end
+    
+    local ok, cur = pcall(function() return obj.Text end)
+    if not ok or type(cur) ~= "string" or cur == "" then return end
+    
+    -- Nếu text hiện tại đã là bản dịch → bỏ qua
+    if cur == entry.lastTranslated then return end
+    
+    -- Nếu text không đổi so với lần trước → bỏ qua
+    if cur == entry.lastOriginal then return end
+    
+    entry.lastOriginal = cur
+    local new = translateText(cur)
+    
+    if new ~= cur then
+        translating = true
+        pcall(function() obj.Text = new end)
+        translating = false
+        entry.lastTranslated = new
+    else
+        entry.lastTranslated = cur
+    end
+end
+
 local function registerObject(obj)
     if not (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) then return end
     if obj:GetAttribute("ChilliTracked") then return end
     obj:SetAttribute("ChilliTracked", true)
-    table.insert(trackedObjects, {
+    
+    local entry = {
         obj = obj,
-        lastText = nil,
-    })
+        lastOriginal = nil,
+        lastTranslated = nil,
+    }
+    table.insert(trackedObjects, entry)
+    
+    -- ✅ Dịch ngay lần đầu (có delay nhỏ để text được set)
+    task.defer(function()
+        task.wait(0.05)
+        translateAndApply(obj, entry)
+    end)
+    
+    -- ✅ HOOK NGAY TỪ ĐẦU — đảm bảo mọi thay đổi text đều được dịch tức thì
+    obj:GetPropertyChangedSignal("Text"):Connect(function()
+        task.defer(function()
+            translateAndApply(obj, entry)
+        end)
+    end)
+    
+    -- ✅ Hook PlaceholderText cho TextBox
+    if obj:IsA("TextBox") then
+        obj:GetPropertyChangedSignal("PlaceholderText"):Connect(function()
+            task.defer(function()
+                if translating then return end
+                translating = true
+                local ok, ph = pcall(function() return obj.PlaceholderText end)
+                if ok and type(ph) == "string" and ph ~= "" then
+                    local new = translateText(ph)
+                    if new ~= ph then
+                        pcall(function() obj.PlaceholderText = new end)
+                    end
+                end
+                translating = false
+            end)
+        end)
+    end
 end
 
 local function scanGui(gui)
@@ -623,33 +707,25 @@ local function scanGui(gui)
     end
 end
 
+-- POLL_INTERVAL = 0.5 (MƯỢT)
 local POLL_INTERVAL = 0.5
+
 local function pollingLoop()
     while true do
         task.wait(POLL_INTERVAL)
-        if translating then continue end
-        translating = true
         
         for i = #trackedObjects, 1, -1 do
             local entry = trackedObjects[i]
             local obj = entry.obj
+            
             if not obj or not obj.Parent then
                 table.remove(trackedObjects, i)
                 continue
             end
             
-            local ok, cur = pcall(function() return obj.Text end)
-            if ok and type(cur) == "string" and cur ~= "" and cur ~= entry.lastText then
-                local new = translateText(cur)
-                if new ~= cur then
-                    pcall(function() obj.Text = new end)
-                    entry.lastText = new
-                else
-                    entry.lastText = cur
-                end
-            end
+            -- Quét để đảm bảo các label cũ được cập nhật
+            translateAndApply(obj, entry)
         end
-        translating = false
     end
 end
 
@@ -694,7 +770,7 @@ local function fetchScript(url)
 end
 
 -- =========================================================
--- UI CHỌN NGÔN NGỮ (COMPACT PREMIUM V11.5.2)
+-- UI CHỌN NGÔN NGỮ (COMPACT PREMIUM)
 -- Icon: 🌶️ | Tiêu đề: CHILLI HUB VIỆT HÓA V4
 -- =========================================================
 local gui = Instance.new("ScreenGui")
