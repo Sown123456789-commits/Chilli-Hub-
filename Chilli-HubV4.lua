@@ -734,7 +734,7 @@ local function fetchScript(url)
 end
 
 -- =========================================================
--- UI CHỌN NGÔN NGỮ (PREMIUM GLASSMORPHISM DESIGN)
+-- UI CHỌN NGÔN NGỮ (COMPACT PREMIUM DESIGN V11.5)
 -- =========================================================
 local gui = Instance.new("ScreenGui")
 gui.Name = "LangSelector"
@@ -756,102 +756,139 @@ backdrop.BackgroundTransparency = 1
 backdrop.BorderSizePixel = 0
 backdrop.ZIndex = 1
 
--- Khung chính
+-- Khung chính (NHỎ GỌN HƠN)
 local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 440, 0, 300)
-frame.Position = UDim2.new(0.5, -220, 0.5, -150)
-frame.BackgroundColor3 = Color3.fromRGB(18, 18, 26)
+frame.Size = UDim2.new(0, 340, 0, 180)
+frame.Position = UDim2.new(0.5, -170, 0.5, -90)
+frame.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
 frame.BorderSizePixel = 0
 frame.Active = true
 frame.ZIndex = 2
 
 local frameGradient = Instance.new("UIGradient", frame)
 frameGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 45)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 30)),
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(24, 24, 34)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(14, 14, 20)),
 })
 frameGradient.Rotation = 135
 
-local frameCorner = Instance.new("UICorner", frame)
-frameCorner.CornerRadius = UDim.new(0, 18)
+Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 14)
 
+-- Glow stroke nhẹ
 local glowStroke = Instance.new("UIStroke", frame)
 glowStroke.Color = Color3.fromRGB(255, 80, 80)
-glowStroke.Thickness = 1.5
-glowStroke.Transparency = 0.3
+glowStroke.Thickness = 1
+glowStroke.Transparency = 0.4
 
 -- Shadow layer
 local shadow = Instance.new("Frame", gui)
 shadow.Size = frame.Size
 shadow.Position = frame.Position
 shadow.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
-shadow.BackgroundTransparency = 0.85
+shadow.BackgroundTransparency = 0.9
 shadow.BorderSizePixel = 0
 shadow.ZIndex = 1
-Instance.new("UICorner", shadow).CornerRadius = UDim.new(0, 20)
+Instance.new("UICorner", shadow).CornerRadius = UDim.new(0, 16)
 
--- Tiêu đề
-local titleContainer = Instance.new("Frame", frame)
-titleContainer.Size = UDim2.new(1, 0, 0, 70)
-titleContainer.Position = UDim2.new(0, 0, 0, 15)
-titleContainer.BackgroundTransparency = 1
+-- Header (compact)
+local header = Instance.new("Frame", frame)
+header.Size = UDim2.new(1, 0, 0, 40)
+header.Position = UDim2.new(0, 0, 0, 0)
+header.BackgroundTransparency = 1
 
-local titleText = Instance.new("TextLabel", titleContainer)
-titleText.Size = UDim2.new(1, 0, 0, 30)
-titleText.Position = UDim2.new(0, 0, 0, 0)
+-- Icon + tiêu đề
+local titleIcon = Instance.new("TextLabel", header)
+titleIcon.Size = UDim2.new(0, 30, 1, 0)
+titleIcon.Position = UDim2.new(0, 14, 0, 0)
+titleIcon.BackgroundTransparency = 1
+titleIcon.Text = "🌐"
+titleIcon.Font = Enum.Font.GothamBold
+titleIcon.TextSize = 18
+
+local titleText = Instance.new("TextLabel", header)
+titleText.Size = UDim2.new(1, -100, 1, 0)
+titleText.Position = UDim2.new(0, 44, 0, 0)
 titleText.BackgroundTransparency = 1
-titleText.Text = "🌐 CHILLI HUB"
+titleText.Text = "CHILLI HUB"
 titleText.TextColor3 = Color3.fromRGB(255, 100, 100)
-titleText.Font = Enum.Font.GothamBlack
-titleText.TextSize = 22
-titleText.TextStrokeTransparency = 0.5
-titleText.TextStrokeColor3 = Color3.fromRGB(80, 0, 0)
+titleText.Font = Enum.Font.GothamBold
+titleText.TextSize = 15
+titleText.TextXAlignment = Enum.TextXAlignment.Left
 
-local subtitleText = Instance.new("TextLabel", titleContainer)
-subtitleText.Size = UDim2.new(1, 0, 0, 20)
-subtitleText.Position = UDim2.new(0, 0, 0, 32)
-subtitleText.BackgroundTransparency = 1
-subtitleText.Text = "Select Your Language"
-subtitleText.TextColor3 = Color3.fromRGB(180, 180, 200)
-subtitleText.Font = Enum.Font.GothamMedium
-subtitleText.TextSize = 13
+-- Nút đóng nhỏ gọn
+local closeBtn = Instance.new("TextButton", header)
+closeBtn.Size = UDim2.new(0, 24, 0, 24)
+closeBtn.Position = UDim2.new(1, -34, 0.5, -12)
+closeBtn.BackgroundColor3 = Color3.fromRGB(40, 20, 20)
+closeBtn.Text = "✕"
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.TextSize = 12
+closeBtn.TextColor3 = Color3.fromRGB(255, 120, 120)
+closeBtn.BorderSizePixel = 0
+closeBtn.AutoButtonColor = false
+Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
 
--- Đường phân cách
+closeBtn.MouseEnter:Connect(function()
+    TweenService:Create(closeBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(255, 60, 60)}):Play()
+    TweenService:Create(closeBtn, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+end)
+closeBtn.MouseLeave:Connect(function()
+    TweenService:Create(closeBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(40, 20, 20)}):Play()
+    TweenService:Create(closeBtn, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(255, 120, 120)}):Play()
+end)
+closeBtn.MouseButton1Click:Connect(function()
+    TweenService:Create(frame, TweenInfo.new(0.2), {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}):Play()
+    TweenService:Create(shadow, TweenInfo.new(0.2), {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}):Play()
+    task.wait(0.2)
+    gui:Destroy()
+end)
+
+-- Divider
 local divider = Instance.new("Frame", frame)
-divider.Size = UDim2.new(1, -60, 0, 1)
-divider.Position = UDim2.new(0, 30, 0, 90)
+divider.Size = UDim2.new(1, -24, 0, 1)
+divider.Position = UDim2.new(0, 12, 0, 40)
 divider.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
 divider.BorderSizePixel = 0
-divider.BackgroundTransparency = 0.5
+divider.BackgroundTransparency = 0.6
 local dividerGradient = Instance.new("UIGradient", divider)
 dividerGradient.Transparency = NumberSequence.new({
     NumberSequenceKeypoint.new(0, 1),
-    NumberSequenceKeypoint.new(0.5, 0.3),
+    NumberSequenceKeypoint.new(0.5, 0.2),
     NumberSequenceKeypoint.new(1, 1),
 })
 
--- Holder nút
+-- Subtitle nhỏ
+local subtitle = Instance.new("TextLabel", frame)
+subtitle.Size = UDim2.new(1, -24, 0, 16)
+subtitle.Position = UDim2.new(0, 12, 0, 46)
+subtitle.BackgroundTransparency = 1
+subtitle.Text = "Chọn ngôn ngữ • Select Language"
+subtitle.TextColor3 = Color3.fromRGB(140, 140, 160)
+subtitle.Font = Enum.Font.Gotham
+subtitle.TextSize = 11
+
+-- Holder nút (2 nút nằm ngang)
 local holder = Instance.new("Frame", frame)
-holder.Size = UDim2.new(1, -60, 0, 90)
-holder.Position = UDim2.new(0, 30, 0, 115)
+holder.Size = UDim2.new(1, -24, 0, 70)
+holder.Position = UDim2.new(0, 12, 0, 70)
 holder.BackgroundTransparency = 1
 local lay = Instance.new("UIListLayout", holder)
 lay.FillDirection = Enum.FillDirection.Horizontal
-lay.Padding = UDim.new(0, 15)
+lay.Padding = UDim.new(0, 10)
 lay.HorizontalAlignment = Enum.HorizontalAlignment.Center
 lay.VerticalAlignment = Enum.VerticalAlignment.Center
 
--- Hàm tạo nút
+-- Hàm tạo nút compact
 local function makeLangBtn(flagEmoji, langName, subName, color1, color2, onClick)
     local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.5, -8, 1, 0)
+    btn.Size = UDim2.new(0.5, -5, 1, 0)
     btn.BackgroundColor3 = color1
     btn.BorderSizePixel = 0
     btn.Text = ""
     btn.AutoButtonColor = false
     btn.Parent = holder
 
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 12)
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
 
     local btnGradient = Instance.new("UIGradient", btn)
     btnGradient.Color = ColorSequence.new({
@@ -863,68 +900,73 @@ local function makeLangBtn(flagEmoji, langName, subName, color1, color2, onClick
     local btnStroke = Instance.new("UIStroke", btn)
     btnStroke.Color = Color3.fromRGB(255, 255, 255)
     btnStroke.Thickness = 1
-    btnStroke.Transparency = 0.8
+    btnStroke.Transparency = 0.85
 
+    -- Cờ bên trái
     local flag = Instance.new("TextLabel", btn)
-    flag.Size = UDim2.new(1, 0, 0, 30)
-    flag.Position = UDim2.new(0, 0, 0, 12)
+    flag.Size = UDim2.new(0, 34, 1, 0)
+    flag.Position = UDim2.new(0, 8, 0, 0)
     flag.BackgroundTransparency = 1
     flag.Text = flagEmoji
     flag.Font = Enum.Font.GothamBold
-    flag.TextSize = 26
+    flag.TextSize = 22
     flag.TextColor3 = Color3.fromRGB(255, 255, 255)
 
+    -- Tên chính
     local nameLabel = Instance.new("TextLabel", btn)
-    nameLabel.Size = UDim2.new(1, 0, 0, 22)
-    nameLabel.Position = UDim2.new(0, 0, 0, 46)
+    nameLabel.Size = UDim2.new(1, -50, 0, 18)
+    nameLabel.Position = UDim2.new(0, 44, 0, 12)
     nameLabel.BackgroundTransparency = 1
     nameLabel.Text = langName
     nameLabel.Font = Enum.Font.GothamBold
-    nameLabel.TextSize = 15
+    nameLabel.TextSize = 13
     nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    nameLabel.TextXAlignment = Enum.TextXAlignment.Left
     nameLabel.TextStrokeTransparency = 0.5
 
+    -- Tên phụ
     local subLabel = Instance.new("TextLabel", btn)
-    subLabel.Size = UDim2.new(1, 0, 0, 16)
-    subLabel.Position = UDim2.new(0, 0, 0, 68)
+    subLabel.Size = UDim2.new(1, -50, 0, 14)
+    subLabel.Position = UDim2.new(0, 44, 0, 30)
     subLabel.BackgroundTransparency = 1
     subLabel.Text = subName
     subLabel.Font = Enum.Font.Gotham
-    subLabel.TextSize = 11
+    subLabel.TextSize = 10
     subLabel.TextColor3 = Color3.fromRGB(230, 230, 240)
-    subLabel.TextTransparency = 0.2
+    subLabel.TextTransparency = 0.25
+    subLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-    -- Hover effect
+    -- Hover
     btn.MouseEnter:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.2), {Size = UDim2.new(0.5, -4, 1.05, 0)}):Play()
-        TweenService:Create(btnStroke, TweenInfo.new(0.2), {Transparency = 0.3, Thickness = 1.5}):Play()
+        TweenService:Create(btn, TweenInfo.new(0.15), {Size = UDim2.new(0.5, -2, 1.03, 0)}):Play()
+        TweenService:Create(btnStroke, TweenInfo.new(0.15), {Transparency = 0.3, Thickness = 1.5}):Play()
     end)
     btn.MouseLeave:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.2), {Size = UDim2.new(0.5, -8, 1, 0)}):Play()
-        TweenService:Create(btnStroke, TweenInfo.new(0.2), {Transparency = 0.8, Thickness = 1}):Play()
+        TweenService:Create(btn, TweenInfo.new(0.15), {Size = UDim2.new(0.5, -5, 1, 0)}):Play()
+        TweenService:Create(btnStroke, TweenInfo.new(0.15), {Transparency = 0.85, Thickness = 1}):Play()
     end)
 
-    -- Click effect
+    -- Click
     btn.MouseButton1Down:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.1), {Size = UDim2.new(0.5, -12, 0.95, 0)}):Play()
+        TweenService:Create(btn, TweenInfo.new(0.08), {Size = UDim2.new(0.5, -8, 0.96, 0)}):Play()
     end)
     btn.MouseButton1Up:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.15), {Size = UDim2.new(0.5, -4, 1.05, 0)}):Play()
+        TweenService:Create(btn, TweenInfo.new(0.12), {Size = UDim2.new(0.5, -2, 1.03, 0)}):Play()
     end)
     btn.MouseButton1Click:Connect(onClick)
 
     return btn
 end
 
--- Trạng thái
+-- Trạng thái (dòng nhỏ ở dưới cùng)
 local status = Instance.new("TextLabel", frame)
-status.Size = UDim2.new(1, -60, 0, 24)
-status.Position = UDim2.new(0, 30, 1, -45)
+status.Size = UDim2.new(1, -24, 0, 16)
+status.Position = UDim2.new(0, 12, 1, -24)
 status.BackgroundTransparency = 1
-status.Text = "Chọn ngôn ngữ để bắt đầu • Choose a language to begin"
-status.TextColor3 = Color3.fromRGB(150, 150, 170)
+status.Text = "Sẵn sàng • Ready"
+status.TextColor3 = Color3.fromRGB(130, 130, 150)
 status.Font = Enum.Font.Gotham
-status.TextSize = 12
+status.TextSize = 10
 
 -- Kéo thả
 local dragging, dragStart, startPos
@@ -946,56 +988,28 @@ frame.InputChanged:Connect(function(input)
     end
 end)
 
--- Nút đóng
-local closeBtn = Instance.new("TextButton", frame)
-closeBtn.Size = UDim2.new(0, 28, 0, 28)
-closeBtn.Position = UDim2.new(1, -38, 0, 12)
-closeBtn.BackgroundColor3 = Color3.fromRGB(50, 20, 20)
-closeBtn.Text = "✕"
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 14
-closeBtn.TextColor3 = Color3.fromRGB(255, 120, 120)
-closeBtn.BorderSizePixel = 0
-closeBtn.AutoButtonColor = false
-Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 8)
-
-closeBtn.MouseEnter:Connect(function()
-    TweenService:Create(closeBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(255, 60, 60)}):Play()
-    TweenService:Create(closeBtn, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-end)
-closeBtn.MouseLeave:Connect(function()
-    TweenService:Create(closeBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(50, 20, 20)}):Play()
-    TweenService:Create(closeBtn, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(255, 120, 120)}):Play()
-end)
-closeBtn.MouseButton1Click:Connect(function()
-    TweenService:Create(frame, TweenInfo.new(0.2), {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}):Play()
-    TweenService:Create(shadow, TweenInfo.new(0.2), {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}):Play()
-    task.wait(0.2)
-    gui:Destroy()
-end)
-
--- Hiệu ứng xuất hiện
+-- Hiệu ứng xuất hiện (nhanh hơn)
 frame.Size = UDim2.new(0, 0, 0, 0)
 frame.Position = UDim2.new(0.5, 0, 0.5, 0)
 shadow.Size = UDim2.new(0, 0, 0, 0)
 shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
-TweenService:Create(backdrop, TweenInfo.new(0.3), {BackgroundTransparency = 0.6}):Play()
-TweenService:Create(frame, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-    Size = UDim2.new(0, 440, 0, 300),
-    Position = UDim2.new(0.5, -220, 0.5, -150)
+TweenService:Create(backdrop, TweenInfo.new(0.25), {BackgroundTransparency = 0.55}):Play()
+TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+    Size = UDim2.new(0, 340, 0, 180),
+    Position = UDim2.new(0.5, -170, 0.5, -90)
 }):Play()
-TweenService:Create(shadow, TweenInfo.new(0.35, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-    Size = UDim2.new(0, 440, 0, 300),
-    Position = UDim2.new(0.5, -220, 0.5, -150)
+TweenService:Create(shadow, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+    Size = UDim2.new(0, 340, 0, 180),
+    Position = UDim2.new(0.5, -170, 0.5, -90)
 }):Play()
 
--- Pulse glow
+-- Pulse glow nhẹ
 task.spawn(function()
     while frame.Parent do
-        TweenService:Create(glowStroke, TweenInfo.new(1.5), {Transparency = 0.6}):Play()
-        task.wait(1.5)
-        TweenService:Create(glowStroke, TweenInfo.new(1.5), {Transparency = 0.2}):Play()
-        task.wait(1.5)
+        TweenService:Create(glowStroke, TweenInfo.new(2), {Transparency = 0.7}):Play()
+        task.wait(2)
+        TweenService:Create(glowStroke, TweenInfo.new(2), {Transparency = 0.3}):Play()
+        task.wait(2)
     end
 end)
 
@@ -1007,34 +1021,36 @@ local function run(lang)
     if loading then return end
     loading = true
     
-    status.Text = (lang == "vi") and "⏳ Đang tải script..." or "⏳ Loading script..."
+    status.Text = (lang == "vi") and "⏳ Đang tải..." or "⏳ Loading..."
+    status.TextColor3 = Color3.fromRGB(255, 200, 100)
     
     for _, child in ipairs(holder:GetChildren()) do
         if child:IsA("TextButton") then
-            TweenService:Create(child, TweenInfo.new(0.3), {BackgroundTransparency = 0.7}):Play()
+            TweenService:Create(child, TweenInfo.new(0.3), {BackgroundTransparency = 0.6}):Play()
         end
     end
     
     task.spawn(function()
         local src = fetchScript(SCRIPT_URL)
         if not src then
-            status.Text = (lang == "vi") and "❌ Không tải được script!" or "❌ Failed to fetch script!"
+            status.Text = (lang == "vi") and "❌ Lỗi tải script!" or "❌ Failed!"
             status.TextColor3 = Color3.fromRGB(255, 100, 100)
             loading = false
             return
         end
         
-        status.Text = (lang == "vi") and "▶️ Đang khởi chạy..." or "▶️ Launching..."
+        status.Text = (lang == "vi") and "▶️ Đang chạy..." or "▶️ Running..."
         status.TextColor3 = Color3.fromRGB(100, 255, 150)
-        task.wait(0.4)
+        task.wait(0.3)
         
-        TweenService:Create(backdrop, TweenInfo.new(0.25), {BackgroundTransparency = 1}):Play()
-        TweenService:Create(frame, TweenInfo.new(0.25, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+        -- Đóng UI mượt
+        TweenService:Create(backdrop, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
+        TweenService:Create(frame, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
             Size = UDim2.new(0, 0, 0, 0),
             Position = UDim2.new(0.5, 0, 0.5, 0)
         }):Play()
-        TweenService:Create(shadow, TweenInfo.new(0.25), {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}):Play()
-        task.wait(0.3)
+        TweenService:Create(shadow, TweenInfo.new(0.2), {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}):Play()
+        task.wait(0.25)
         gui:Destroy()
         
         local loader = loadstring or load
@@ -1047,7 +1063,6 @@ local function run(lang)
         task.spawn(fn)
         
         if lang == "vi" then
-            -- Đợi 3 giây cho Chilli Hub load xong, rồi mới hook
             task.wait(3)
             task.spawn(startWatching)
             task.spawn(pollingLoop)
