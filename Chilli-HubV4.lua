@@ -61,8 +61,9 @@ local ON_PROFILE = "main"
 local OFF_PROFILE = "AutoOff"
 
 -- Tạo bản sao của cấu hình trên nhưng tắt các công tắc hành động thuộc nhóm
--- Farm / Admin Abuse / Progress / Auto Hop / Player > Combat / Player > Movement.
--- Các mục khác (ESP, Anti AFK, Optimizer, FPS...) giữ nguyên.
+-- Farm / Admin Abuse / Progress / Auto Hop / Player > Combat / Movement / ESP.
+-- Các mục khác (Anti AFK, Auto Rejoin, Optimizer, FPS...) và các công tắc bảo vệ
+-- như "Keep Mutated Eggs", "Skip Mutated Pets", "Anti Guard Panel" được giữ nguyên.
 local function buildOffConfig()
     local ok, data = pcall(function() return HttpService:JSONDecode(RAW_CONFIG_JSON) end)
     if not ok or type(data) ~= "table" or type(data.Config) ~= "table" or type(data.Config.Values) ~= "table" then
@@ -72,9 +73,7 @@ local function buildOffConfig()
     data.Name = OFF_PROFILE
     data.Config.Profile = OFF_PROFILE
 
-    -- Chỉ tắt các công tắc "hành động" (tên bắt đầu bằng "Auto " hoặc nằm trong danh sách dưới).
-    -- Các công tắc bảo vệ/phụ trợ như "Keep Mutated Eggs", "Skip Mutated Pets", "Anti Guard Panel"...
-    -- được giữ nguyên để không làm mất an toàn khi bạn tự bật lại tính năng bằng tay.
+    -- Công tắc "hành động": tên bắt đầu bằng "Auto " / "ESP " hoặc nằm trong danh sách này
     local ACTION_EXACT = {
         ["Hit Aura"] = true, ["Instant Steal"] = true, ["Instant Steal V2"] = true,
         ["Instant Steal V3"] = true, ["Stay On Treadmill"] = true,
@@ -85,7 +84,7 @@ local function buildOffConfig()
         for key, v in pairs(node) do
             if type(v) == "table" then
                 if v.Type == "toggle" then
-                    if type(key) == "string" and (key:sub(1, 5) == "Auto " or ACTION_EXACT[key]) then
+                    if type(key) == "string" and (key:sub(1, 5) == "Auto " or key:sub(1, 4) == "ESP " or ACTION_EXACT[key]) then
                         v.Value = false
                     end
                 else
@@ -97,7 +96,7 @@ local function buildOffConfig()
 
     local paths = {
         {"Farm"}, {"Admin Abuse"}, {"Progress"}, {"Auto Hop"},
-        {"Player", "Combat"}, {"Player", "Movement"}
+        {"Player", "Combat"}, {"Player", "Movement"}, {"Player", "ESP"}
     }
     for _, path in ipairs(paths) do
         local node = data.Config.Values
