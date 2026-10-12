@@ -1,23 +1,77 @@
--- =========================================================
--- CHILLI HUB TRANSLATOR V11.5 FINAL
--- Icon: 🌶️ | Tiêu đề: CHILLI HUB VIỆT HÓA V4
--- FIX: Dịch ngay khi mở tab lần đầu (hook từ đầu, không chờ revert)
--- POLL_INTERVAL: 0.5s (MƯỢT)
--- Cơ chế: Polling 0.5s + Hook ngay lập tức cho mọi label
--- =========================================================
+-- ==============================================================================
+--  CHILLI HUB V4 - DYNAMIC ISLAND & MASTER 100% TRANSLATION
+-- ==============================================================================
+
+local VERSION = "V4"
+local BRAND = "Chilli Hub " .. VERSION
+
+-- ==================== 0. DỌN DẸP SẠCH TÀN DƯ GUI CŨ ====================
+local cleanupList = {
+    "Chilli_Dynamic_Island",
+    "Chilli_AutoConfig_Btn",
+    "Chilli_AutoFarm_Widget",
+    "Chilli_Liquid_Capsule",
+    "Sparkling_New_Badge"
+}
+
+for _, root in ipairs({gethui and gethui(), game:GetService("CoreGui"), game:GetService("Players").LocalPlayer:FindFirstChild("PlayerGui")}) do
+    if root then
+        for _, name in ipairs(cleanupList) do
+            local f = root:FindFirstChild(name, true)
+            while f do
+                pcall(function() f:Destroy() end)
+                f = root:FindFirstChild(name, true)
+            end
+        end
+    end
+end
+
+-- ==================== 1. CHỜ GAME & NHÂN VẬT LOAD XONG ====================
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
 local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer or Players:GetPropertyChangedSignal("LocalPlayer"):Wait()
+
+if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+    LocalPlayer.CharacterAdded:Wait()
+    repeat task.wait(0.2) until LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+end
+
+task.wait(2.5) -- Đệm chờ mọi thứ load ổn định
+
+-- ==================== 2. TẢI SCRIPT CHILLI HUB GỐC ====================
+task.spawn(function()
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"))()
+    end)
+end)
+
 local CoreGui = game:GetService("CoreGui")
-local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
-local SCRIPT_URL = "https://raw.githubusercontent.com/tienkhanh1/spicy/main/Chilli.lua"
+-- ==================== DỮ LIỆU CẤU HÌNH JSON ====================
+local RAW_CONFIG_JSON = [===[{"Config":{"Profile":"main","Version":2,"States":{"Farm HUD Stealing Position":{"Value":[]},"Quick Panel Collapsed":{"Value":{"1":true}},"Quick Keybinds":{"Value":{"Player > Movement > Speed Boost":"Q"}},"Farm HUD World Position":{"Value":[]},"Farm HUD Stolen Eggs":{"Value":{"History":[{"At":1791707562,"Name":"Parrotfish Egg","Category":"Parrotfish","Scale":0.9196704573013789,"Rarity":"Rare","Value":659.493259982963}],"Count":1,"Best":{"Category":"Parrotfish","Name":"Parrotfish Egg","Rarity":"Rare","Rank":3}}},"Farm HUD Top Eggs Position":{"Value":[]},"Anti Guard Enabled":{"Value":false},"Farm HUD Steal History Position":{"Value":[]},"Quick Pinned Features":{"Value":["Player > Movement > Speed Boost","Player > Movement > Boost Speed"]},"Open On Launch":{"Value":true},"Quick Panel Position":{"Value":{"1":{"Y":0.32634490728378298,"X":0.8134856224060059}}},"Notifications":{"Value":true},"Farm HUD Top Pets Position":{"Value":[]},"Quick Open Key":{"Value":"LeftControl"},"FPS and Ping Position":{"Value":{"XOffset":16,"XScale":0,"YScale":0,"YOffset":47}},"Farm HUD Status Position":{"Value":[]},"Farm HUD Events Position":{"Value":[]},"Steal Panel Open":{"Value":false},"Quick LeftCenter Hidden":{"Value":true},"Farm HUD Economy Position":{"Value":[]},"Quick Pin Groups":{"Value":[]},"Farm HUD Collection Position":{"Value":[]}},"Values":{"Admin Abuse":{"Minigame Eggs":{"Auto Steal Minigame Egg":{"Value":true,"Type":"toggle"}},"Instant Steal V3":{"Instant Steal V3 Note":{"Value":"Cần Máy Tập Admin","Type":"text"},"Instant Steal V3":{"Value":false,"Type":"toggle"}},"Admin Treadmill":{"Auto Use Admin Treadmill":{"Value":true,"Type":"toggle"}},"Capture The Egg":{"Hold Height":{"Value":45,"Type":"slider","Unit":"studs"},"Auto Capture Event Egg":{"Value":false,"Type":"toggle"},"Keep Away Distance":{"Value":45,"Type":"slider","Unit":"studs"},"Take It From The Holder":{"Value":true,"Type":"toggle"}}},"Predictor":{"Egg Predictor":{"Sort By":{"Value":"Value","Type":"dropdown"},"Preview Card":{"Value":true,"Type":"toggle"}},"Discord Webhook":{"Webhook URL":{"Value":"","Type":"input"},"Notify Fused Eggs":{"Value":false,"Type":"toggle"},"Notify Stolen Eggs":{"Value":false,"Type":"toggle"},"Webhook Min Rarity":{"Value":"Any","Type":"dropdown"},"Webhook Eggs":{"Value":[],"Type":"multidropdown"},"Webhook Min Value":{"Value":0,"Type":"slider"},"Ping @everyone":{"Value":false,"Type":"toggle"}}},"Progress":{"Auto Progression":{"Auto Buy Trail":{"Value":true,"Type":"toggle"},"Auto Claim Index":{"Value":true,"Type":"toggle"},"Auto Upgrade Treadmill":{"Value":true,"Type":"toggle"},"Auto Claim":{"Value":true,"Type":"toggle"},"Auto Upgrade Base":{"Value":true,"Type":"toggle"}}},"Quick":{"Pin Pad":{"Pad Size":{"Value":150,"Type":"slider","Unit":"%"},"Enable Keybinds":{"Value":true,"Type":"toggle"},"Show Pin Pads":{"Value":true,"Type":"toggle"},"Visible Quick Bars":{"Value":["Quick Bar 1","Quick Bar 2","Quick Bar 3","Quick Bar 4","Quick Bar 5"],"Type":"multidropdown"}}},"Auto Hop":{"Egg Finder":{"Hop Mode":{"Value":"Steal Then Hop","Type":"dropdown"},"Min Rarity":{"Value":"Secret","Type":"dropdown"},"Rarity To Wait For":{"Value":"Cosmic","Type":"dropdown"},"First Hop Delay":{"Value":5,"Type":"slider","Unit":"s"},"Sync With Auto Steal Filters":{"Value":true,"Type":"toggle"},"Target Specific Eggs":{"Value":[],"Type":"multidropdown"},"Min Value To Find":{"Value":700.11,"Type":"slider"},"Auto Hop":{"Value":false,"Type":"toggle"},"Target Areas":{"Value":["Cherry Blossom","Light Dark","Titan Temple","Enchanted Forest"],"Type":"multidropdown"}}},"Player":{"ESP":{"ESP Eggs":{"Value":true,"Type":"toggle"},"ESP Show Info":{"Value":["Icon","Name","Value"],"Type":"multidropdown"},"ESP Guard Size":{"Value":75,"Type":"slider","Unit":"%"},"ESP Player Info":{"Value":["Name","Tool"],"Type":"multidropdown"},"ESP Other Base Eggs":{"Value":false,"Type":"toggle"},"ESP Min Rarity":{"Value":"7 - Cosmic","Type":"dropdown"},"ESP Guards":{"Value":true,"Type":"toggle"},"Min ESP Value":{"Value":0,"Type":"slider"},"ESP Player Size":{"Value":75,"Type":"slider","Unit":"%"},"ESP Players":{"Value":true,"Type":"toggle"},"ESP Own Base Eggs":{"Value":true,"Type":"toggle"},"ESP Fixed Size":{"Value":false,"Type":"toggle"},"ESP Egg Size":{"Value":75,"Type":"slider","Unit":"%"}},"Character":{"Instant Prompts":{"Value":true,"Type":"toggle"},"Anti Ragdoll":{"Value":true,"Type":"toggle"},"Anti Trap":{"Value":true,"Type":"toggle"},"Invisibility":{"Value":false,"Type":"toggle"}},"Movement":{"Speed Boost":{"Value":false,"Type":"toggle"},"Boost Speed":{"Value":1000,"Type":"slider","Unit":"studs/s"},"Infinite Jump":{"Value":false,"Type":"toggle"}},"Combat":{"Auto Hit Egg Holders":{"Value":false,"Type":"toggle"},"Hit Max Speed":{"Value":750,"Type":"slider","Unit":"studs/s"},"Auto Hit Nearest Player":{"Value":false,"Type":"toggle"},"Hit Player":{"Value":"67sixseven16690","Type":"dropdown"},"Hit Lead":{"Value":-275,"Type":"slider"},"Hit Tween Speed":{"Value":400,"Type":"slider","Unit":"studs/s"},"Hit Sweep":{"Value":60,"Type":"slider","Unit":"%"},"Chase Settings":{"Value":"Cài Đặt Đuổi Đánh","Type":"label"},"Auto Hit Specific Player":{"Value":false,"Type":"toggle"},"Hit Aura":{"Value":true,"Type":"toggle"},"Hit Status":{"Value":"Aura ready, nobody in reach","Type":"text"}}},"Settings":{"Interface":{"UI Size":{"Value":100,"Type":"slider","Unit":"%"}}},"Farm":{"Auto Steal":{"Drop Eggs At Safe Zone":{"Value":false,"Type":"toggle"},"Target Specific Eggs":{"Value":[],"Type":"multidropdown"},"Biohazard Lab Eggs":{"Value":["Red Panda Egg (43%)","Snowy Owl Egg (40%)","Salamander Egg (38%)"],"Type":"multidropdown"},"Anti Guard Panel":{"Value":true,"Type":"toggle"},"Steal Missing Lab Eggs":{"Value":false,"Type":"toggle"},"Instant Steal Steps":{"Value":2,"Type":"slider"},"Instant Steal Zones":{"Value":["Titan Temple","Light Dark","Enchanted Forest"],"Type":"multidropdown"},"Target Areas":{"Value":["Cherry Blossom","Light Dark","Titan Temple","Enchanted Forest"],"Type":"multidropdown"},"Unstable DNA Lab Eggs":{"Value":["Toro Egg (24%)","Winged Lamb Egg (23%)","Bladehide Egg (23%)","Imp Egg (22%)","Crustacia Egg (22%)"],"Type":"multidropdown"},"Stock Per Egg":{"Value":3,"Type":"slider","Unit":""},"Auto Steal":{"Value":true,"Type":"toggle"},"Min Rarity":{"Value":"Secret","Type":"dropdown"},"Teleport To Egg":{"Value":true,"Type":"toggle"},"Carry Speed":{"Value":120,"Type":"slider","Unit":"%"},"Experimental Lab Eggs":{"Value":["Bladehide Egg (34%)","Red Panda Egg (34%)","Crustacia Egg (33%)","Salamander Egg (33%)","Snowy Owl Egg (32%)"],"Type":"multidropdown"},"Fast Delivery":{"Value":true,"Type":"toggle"},"Skip Owned Lab Eggs":{"Value":true,"Type":"toggle"},"Steal Priority":{"Value":"Highest Value","Type":"dropdown"},"Instant Steal V2":{"Value":true,"Type":"toggle"},"Instant Steal":{"Value":false,"Type":"toggle"},"Steal Missing Index Eggs":{"Value":false,"Type":"toggle"},"Min Steal Value":{"Value":700.11,"Type":"slider"},"Tween Speed":{"Value":120,"Type":"slider","Unit":"%"},"Stock Lab Eggs For":{"Value":[],"Type":"multidropdown"}},"Auto Sell":{"Egg Sell Value":{"Value":0,"Type":"slider"},"Sell Egg Rule":{"Value":"Rarity Only","Type":"dropdown"},"Auto Sell Egg":{"Value":false,"Type":"toggle"},"Blacklist Sell Eggs":{"Value":[],"Type":"multidropdown"},"Keep Mutated Eggs":{"Value":true,"Type":"toggle"},"Egg Max Rarity":{"Value":"3 - Rare","Type":"dropdown"},"Blacklist Sell Pets":{"Value":[],"Type":"multidropdown"},"Egg Sell Preview":{"Value":"Egg matches  -  0 eggs for $0","Type":"text"},"Auto Sell Pet":{"Value":false,"Type":"toggle"},"Pet Sell Value":{"Value":777.78,"Type":"slider"},"Pet Sell Preview":{"Value":"Pet matches  -  0 pets for $0","Type":"text"},"Keep Mutated Pets":{"Value":false,"Type":"toggle"},"Sell Pet Rule":{"Value":"Rarity Only","Type":"dropdown"},"Pet Max Rarity":{"Value":"8 - Secret","Type":"dropdown"}},"Auto Fuse Machine":{"Max Rarity to Fuse":{"Value":"6 - Mythic","Type":"dropdown"},"Skip Mutated Pets":{"Value":true,"Type":"toggle"},"Auto Fuse Machine":{"Value":true,"Type":"toggle"},"Specific Species to Fuse":{"Value":[],"Type":"multidropdown"},"Eject Incomplete Slots":{"Value":true,"Type":"toggle"},"Pets To Use":{"Value":"Lowest To Highest","Type":"dropdown"},"Fuse Priority Mode":{"Value":"Lowest Rarity First","Type":"dropdown"},"Fuse Preview":{"Value":"Không đủ 3 pet trùng khớp","Type":"text"}},"Auto Favorite":{"Favorite Mutations":{"Value":[],"Type":"multidropdown"},"Favorite Preview":{"Value":"Favorite matches  -  5 pets, 0 to mark  |  23 favorited","Type":"text"},"Favorite Min Rarity":{"Value":"10 - Divine","Type":"dropdown"},"Auto Favorite Equipped":{"Value":true,"Type":"toggle"},"Auto Favorite Pet":{"Value":true,"Type":"toggle"},"Always Favorite Species":{"Value":[],"Type":"multidropdown"},"Min Favorite Value":{"Value":797.34,"Type":"slider"},"Auto Unfavorite Equipped":{"Value":true,"Type":"toggle"},"Favorite Rule":{"Value":"Match All","Type":"dropdown"}},"Auto Treadmill":{"Stay On Treadmill":{"Value":true,"Type":"toggle"},"Auto Treadmill":{"Value":true,"Type":"toggle"}},"Auto Place Egg":{"Place Egg Rule":{"Value":"Always","Type":"dropdown"},"Place Rarities":{"Value":[],"Type":"multidropdown"},"Pen Status":{"Value":"Eggs placed 5/30  -  19/19 pets equipped, 0 in bag","Type":"text"},"Auto Place Egg":{"Value":true,"Type":"toggle"},"Place Egg Order":{"Value":"Highest Value","Type":"dropdown"},"Min Place Value":{"Value":0,"Type":"slider"},"Place Specific Eggs":{"Value":[],"Type":"multidropdown"}},"Wisp Companion":{"Auto Banjo Cricket":{"Value":true,"Type":"toggle"},"Auto Wisp":{"Value":true,"Type":"toggle"},"Wisp Status":{"Value":"Banjo Cricket: Done, Cricket's Banjo is yours","Type":"text"}},"Butterfly Bloom":{"Auto Butterfly Bloom":{"Value":true,"Type":"toggle"},"Trade Up Tiers":{"Value":["Emerald To Sapphire","Sapphire To Amethyst","Amethyst To Radiant"],"Type":"multidropdown"},"Auto Craft Essence":{"Value":true,"Type":"toggle"},"Auto Trade Up":{"Value":true,"Type":"toggle"},"Catch Priority":{"Value":"Rarest","Type":"dropdown"},"Tween Speed  ":{"Value":600,"Type":"slider","Unit":"studs/s"},"Catch Mode":{"Value":"Chase","Type":"dropdown"},"Catch Butterflies":{"Value":["Radiant Butterfly","Amethyst Butterfly","Sapphire Butterfly","Emerald Butterfly"],"Type":"multidropdown"},"Smart Trade For Essence":{"Value":true,"Type":"toggle"}},"Racing Event":{"Race Speed":{"Value":400,"Type":"slider"},"Auto Race":{"Value":true,"Type":"toggle"},"Race Shop Items":{"Value":["Nitro Mutation"],"Type":"multidropdown"},"Auto Equip Racer":{"Value":true,"Type":"toggle"},"Auto Buy Race Shop":{"Value":true,"Type":"toggle"},"Auto Claim Race Rewards":{"Value":true,"Type":"toggle"},"Auto Use Power-Ups":{"Value":true,"Type":"toggle"},"Racer":{"Value":"Best Owned","Type":"dropdown"}},"Auto Mutation":{"Mutate Priority":{"Value":"Highest Value","Type":"dropdown"},"Mutations To Use":{"Value":["Fractured","Scrambled","Enchanted","Nitro"],"Type":"multidropdown"},"Mutate Target Eggs":{"Value":[],"Type":"multidropdown"},"Mutate Min Value":{"Value":797.34,"Type":"slider"},"Auto Mutate":{"Value":true,"Type":"toggle"},"Mutate Status":{"Value":"Waiting  |  No egg to mutate","Type":"text"},"Auto Buy Nitro":{"Value":true,"Type":"toggle"},"Mutate Min Rarity":{"Value":"Secret","Type":"dropdown"}},"Auto Sell Lab Egg":{"Lab Egg Sell Value":{"Value":700.11,"Type":"slider"},"Sell Lab Egg Rule":{"Value":"Rarity And Value","Type":"dropdown"},"Lab Egg Max Rarity":{"Value":"Off","Type":"dropdown"},"Auto Sell Lab Egg":{"Value":true,"Type":"toggle"},"Lab Egg Sell Preview":{"Value":"Lab egg matches  -  0 eggs for $0","Type":"text"},"Keep Lab Pets":{"Value":[],"Type":"multidropdown"},"Keep Mutated Lab Eggs":{"Value":true,"Type":"toggle"}},"Auto Hatch & Equip":{"Hatch Specific Eggs":{"Value":[],"Type":"multidropdown"},"Auto Hatch":{"Value":false,"Type":"toggle"},"Hatch Min Rarity":{"Value":"Any","Type":"dropdown"},"Min Hatch Value":{"Value":0,"Type":"slider"},"Auto Equip Best":{"Value":true,"Type":"toggle"}},"Dr Scramble Lab":{"Lab Banners":{"Value":[],"Type":"multidropdown"},"Lab Status":{"Value":"Unstable DNA  -  needs Flame Sprite, Salamander, Bladehide  -  pity 0/100  -  free rerolls 0  -  rotates in 19:58  -  Need a Flame Sprite egg","Type":"text"},"Auto Place Lab Reward Eggs":{"Value":true,"Type":"toggle"},"Auto Reroll Lab Recipe":{"Value":true,"Type":"toggle"},"Auto Lab Trade-In":{"Value":true,"Type":"toggle"}},"Shooting Star":{"Auto Catch Shooting Star":{"Value":true,"Type":"toggle"},"Shooting Star Status":{"Value":"Đang chờ sao băng rơi","Type":"text"}}},"Misc":{"Performance":{"Optimizer":{"Value":true,"Type":"toggle"},"Farm HUD":{"Value":false,"Type":"toggle"},"Background Color":{"Value":"White","Type":"dropdown"},"Egg Card Image":{"Value":"Egg Image","Type":"dropdown"},"Disable 3D Render":{"Value":false,"Type":"toggle"},"FPS and Ping":{"Value":true,"Type":"toggle"},"FPS Cap":{"Value":240,"Type":"slider","Unit":" FPS"},"HUD Size":{"Value":70,"Type":"slider","Unit":"%"},"Showcase Cards":{"Value":4,"Type":"slider"},"Hide Game UI":{"Value":true,"Type":"toggle"},"HUD Items":{"Value":["Money","Income","Speed","Treadmill","Eggs Stolen","Best Steal","Night Timer","Session Time","Activity","Racing Event","Race Wins","Shooting Star","Pets","Eggs","Top Pets","Top Eggs","Steal History"],"Type":"multidropdown"},"FPS and Ping Size":{"Value":100,"Type":"slider","Unit":"%"}},"Utility":{"Anti AFK":{"Value":true,"Type":"toggle"}}},"Server":{"Server":{"Server Hop Mode":{"Value":"Least Players","Type":"dropdown"},"Auto Load Script":{"Value":true,"Type":"toggle"},"Auto Rejoin When Disconnect":{"Value":true,"Type":"toggle"}}}},"SavedAt":1791729602},"Format":"ChilliLibraryConfig","ExportVersion":1,"Name":"main"}]===]
 
--- =========================================================
--- TỪ ĐIỂN 1: KHỚP CHÍNH XÁC (nhanh nhất, ưu tiên cao)
--- =========================================================
+-- ==================== 3. TỪ ĐIỂN DỊCH THUẬT ====================
+local currentLanguage = "VI"
+local FastCache = {}
+local switchGlobalLanguage = nil
+local updateIslandContentLanguage = nil
+
+-- Thay thế chuỗi thường (plain), không dùng pattern nên an toàn với ký tự đặc biệt như "-" "%" "("
+local function replaceAll(str, findStr, replaceStr)
+    local startIdx, endIdx = str:find(findStr, 1, true)
+    while startIdx do
+        str = str:sub(1, startIdx - 1) .. replaceStr .. str:sub(endIdx + 1)
+        startIdx, endIdx = str:find(findStr, startIdx + #replaceStr, true)
+    end
+    return str
+end
+
 local EXACT_MATCH_VI = {
-    -- Chung
-    ["Chilli Hub"] = "Chilli Hub Việt Hóa V4",
     ["Hop"] = "Đổi Server",
     ["Join"] = "Vào Phòng",
     ["Copy"] = "Sao Chép",
@@ -44,52 +98,7 @@ local EXACT_MATCH_VI = {
     ["Rarest"] = "Hiếm nhất",
     ["Nearest"] = "Gần nhất",
     ["Always"] = "Luôn luôn",
-    ["Never"] = "Không bao giờ",
     ["Value"] = "Giá trị",
-    ["Normal"] = "Bình Thường",
-    ["Steps"] = "Từng Bước",
-    ["Fast Delivery"] = "Giao Hàng Nhanh",
-    ["Cancel"] = "Hủy",
-    ["Turn On"] = "Bật Lên",
-    ["WARNING"] = "CẢNH BÁO",
-    ["selected"] = "đã chọn",
-    
-    -- Bổ sung từ thường gặp
-    ["Buy"] = "Mua",
-    ["Equip"] = "Trang Bị",
-    ["Unequip"] = "Bỏ Trang Bị",
-    ["Loading..."] = "Đang Tải...",
-    ["Are you sure?"] = "Bạn có chắc không?",
-    ["Yes"] = "Có",
-    ["No"] = "Không",
-    ["Back"] = "Quay Lại",
-    ["Next"] = "Tiếp",
-    ["Previous"] = "Trước",
-    ["Confirm"] = "Xác Nhận",
-    ["Submit"] = "Gửi",
-    ["Delete"] = "Xóa",
-    ["Edit"] = "Sửa",
-    ["Save"] = "Lưu",
-    ["Open"] = "Mở",
-    ["Show"] = "Hiện",
-    ["Hide"] = "Ẩn",
-    ["Account"] = "Tài Khoản",
-    ["Admin"] = "Quản Trị Viên",
-    ["Owner"] = "Chủ Sở Hữu",
-    ["Moderator"] = "Người Điều Hành",
-
-    -- Racing Event
-    ["Racer"] = "Xe Đua",
-    ["Best Owned"] = "Tốt Nhất Sở Hữu",
-    ["Search..."] = "Tìm Kiếm...",
-    ["Racing Bat"] = "Gậy Đua",
-    ["Cash Booster"] = "Tăng Tiền",
-    ["Admin Abuse"] = "Lạm Quyền Admin",
-    ["Seahorse"] = "Cá ngựa",
-    ["Ostrich"] = "Đà điểu",
-    ["Shooting Star"] = "Sao Băng",
-
-    -- Độ hiếm
     ["Cosmic"] = "Vũ Trụ (Cosmic)",
     ["Divine"] = "Thánh Thần (Divine)",
     ["Eternal"] = "Vĩnh Cửu (Eternal)",
@@ -100,10 +109,6 @@ local EXACT_MATCH_VI = {
     ["Uncommon"] = "Thường (Uncommon)",
     ["Common"] = "Phổ Thông (Common)",
     ["Secret"] = "Bí Ẩn (Secret)",
-    ["3 - Rare"] = "3 - Hiếm (Rare)",
-    ["6 - Mythic"] = "6 - Thần Thoại (Mythic)",
-
-    -- Chế độ chọn
     ["Least Players"] = "Ít người chơi nhất",
     ["Steal Then Hop"] = "Cướp xong đổi server",
     ["Rarity Only"] = "Chỉ theo độ hiếm",
@@ -116,1006 +121,1191 @@ local EXACT_MATCH_VI = {
     ["Match Any"] = "Khớp bất kỳ",
     ["Highest Value"] = "Giá trị cao nhất",
     ["Lowest Value"] = "Giá trị thấp nhất",
-
-    -- Chữ viết hoa
+    ["3 - Rare"] = "3 - Hiếm (Rare)",
+    ["6 - Mythic"] = "6 - Thần Thoại (Mythic)",
+    ["8 - Secret"] = "8 - Bí Ẩn (Secret)",
+    ["10 - Divine"] = "10 - Thánh Thần (Divine)",
     ["EGGS"] = "TRỨNG",
     ["READY"] = "SẴN SÀNG",
     ["GROWING"] = "ĐANG LỚN",
     ["IN BAG"] = "TRONG TÚI",
     ["TOTAL / S"] = "TỔNG / GIÂY",
-    ["SCRAMBLED"] = "ĐÃ BIẾN ĐỔI",
-    ["GOLDEN"] = "VÀNG",
-    ["SILVER"] = "BẠC",
-    ["RAINBOW"] = "CẦU VỒNG"
+    ["WAITING"] = "ĐANG CHỜ",
+    ["INACTIVE"] = "KHÔNG HOẠT ĐỘNG"
 }
 
--- =========================================================
--- TỪ ĐIỂN 2: THAY THẾ CỤM TỪ (fallback, xử lý câu dài)
--- =========================================================
 local MAP_VI = {
-    -- Tab chính
-    ["Chilli Hub"] = "Chilli Hub Việt Hóa V4",
+    -- MENU CHÍNH
     ["Farm"] = "Cày Cuốc",
     ["Player"] = "Người Chơi",
     ["Predictor"] = "Dự Đoán",
     ["Progress"] = "Tiến Trình",
     ["Server"] = "Máy Chủ",
     ["Misc"] = "Khác",
-    ["Auto Hop"] = "Tự Đổi Server",
-    ["Tự Đổi Server"] = "Tự Đổi Máy Chủ",
+    ["Auto Hop"] = "Tự Đổi Máy Chủ",
+    ["Admin Abuse"] = "Menu Admin (Abuse)",
     ["Discord"] = "Discord",
     ["Quick & Keys"] = "Phím Tắt & Key",
     ["Settings"] = "Cài Đặt",
     ["Config"] = "Cấu Hình",
-    ["Filter features..."] = "Lọc Tính Năng...",
+    ["Filter features..."] = "Lọc tính năng...",
     ["Search"] = "Tìm kiếm",
 
-    -- Sự kiện
-    ["Dr Scramble Lab & Mech"] = "Phòng Lab & Robot Scramble",
-    ["Dr Scramble Lab"] = "Phòng Thí Nghiệm Dr Scramble",
-    ["Butterfly Bloom"] = "Sự Kiện Bắt Bướm",
-    ["Wisp Companion"] = "Đồng Hành Wisp",
-    ["Racing Event"] = "Sự Kiện Đua Xe",
-    ["Admin Abuse"] = "Lạm Quyền Admin",
-    ["Auto Mutation"] = "Tự Động Đột Biến",
-
-    -- Racing Event
-    ["Auto Race"] = "Tự Động Đua",
-    ["Race Speed"] = "Tốc Độ Đua",
-    ["Auto Use Power-Ups"] = "Tự Động Dùng Tăng Sức Mạnh",
-    ["Race Rewards"] = "Phần Thưởng Đua",
-    ["Auto Equip Racer"] = "Tự Động Trang Bị Xe Đua",
-    ["Auto Buy Race Shop"] = "Tự Động Mua Cửa Hàng Đua",
-    ["Race Shop Items"] = "Vật Phẩm Cửa Hàng Đua",
-    ["Nitro Mutation"] = "Đột Biến Nitro",
-    ["Treadmill Boost"] = "Tăng Tốc Máy Chạy Bộ",
-    ["Tự Nhận Thưởng Race Rewards"] = "Tự Động Nhận Phần Thưởng Đua",
-
-    -- Shooting Star
-    ["Auto Catch Shooting Star"] = "Tự Động Bắt Sao Băng",
-    ["Waiting for a shooting star"] = "Chờ đợi sao băng",
-
-    -- Capture The Egg
-    ["Capture The Egg"] = "Bắt Trứng",
-    ["Auto Capture Event Egg"] = "Tự Động Bắt Trứng Sự Kiện",
-    ["Take It From The Holder"] = "Lấy Từ Người Đang Giữ",
-    ["Hold Height"] = "Độ Cao Giữ",
-    ["Keep Away Distance"] = "Khoảng Cách Giữ An Toàn",
-
-    -- Admin Treadmill
-    ["Admin Treadmill"] = "Máy Chạy Bộ Admin",
-
-    -- Auto Steal
-    ["Auto Steal"] = "Tự Động Cướp Trứng",
-    ["Tự Động Cướp Trứng"] = "Tự Động Cướp Trứng",
-    ["Tự Động Cướp"] = "Tự Động Cướp",
-    ["Instant Steal"] = "Cướp Siêu Tốc (Instant Steal)",
-    ["Cuớp Siêu Tốc (Instant Steal)"] = "Cướp Siêu Tốc (Instant Steal)",
-    ["Cuớp Siêu Tốc (Instant Steal) V2"] = "Cướp Siêu Tốc (Instant Steal) V2",
-    ["Delivers the egg to the safe zone in a few seconds, needs enough Speed"] = "Chuyển trứng về căn cứ trong vài giây (cần đủ tốc độ)",
-    ["Chuyển trứng về căn cứ trong vài giây (cần đủ tốc độ)"] = "Chuyển trứng về căn cứ trong vài giây (cần đủ tốc độ)",
-    ["Only works in Titan Temple, Light Dark and Enchanted Forest"] = "Chỉ hoạt động ở Đền Titan, Rừng Sáng Tối và Rừng Phù Phép",
-    ["Other Zones Delivery"] = "Giao Trứng Khu Vực Khác",
-    ["How eggs outside Titan Temple, Light Dark and Enchanted Forest come home"] = "Cách trứng ngoài Đền Titan, Rừng Sáng Tối và Rừng Phù Phép được mang về",
-    ["Delivers the same way as Cuớp Siêu Tốc (Instant Steal) V2 instead of using steps"] = "Giao trứng giống như Cướp Siêu Tốc V2 thay vì dùng từng bước",
-    ["Instant Steal Steps"] = "Số Bước Cướp Siêu Tốc",
-    ["Số Bước Cướp Siêu Tốc"] = "Số Bước Cướp Siêu Tốc",
-    ["Higher is safer but takes longer"] = "Càng nhiều bước càng an toàn nhưng bay chậm hơn",
-    ["Càng nhiều bước càng an toàn nhưng bay chậm hơn"] = "Càng nhiều bước càng an toàn nhưng bay chậm hơn",
-    ["Target Areas"] = "Khu Vực Mục Tiêu",
-    ["Khu Vực Mục Tiêu"] = "Khu Vực Mục Tiêu",
-    ["Min Rarity"] = "Độ Hiếm Tối Thiểu",
-    ["Steal eggs of the chosen rarity and every rarity above it"] = "Cướp trứng từ độ hiếm đã chọn trở lên",
-    ["Min Steal Value"] = "Giá Trị Cướp Min",
-    ["Giá Trị Cướp Min"] = "Giá Trị Cướp Min",
-    ["Target Specific Eggs"] = "Chọn Đích Danh Trứng Cần Cướp",
-    ["Steal Missing Lab Eggs"] = "Cướp Trứng Lab Còn Thiếu",
-    ["Steal Missing Index Eggs"] = "Cướp Trứng Sách Còn Thiếu",
-    ["Also steal eggs missing from your index, highest area first"] = "Cướp cả trứng còn thiếu trong sách, ưu tiên khu cao nhất",
-    ["Steal Priority"] = "Ưu Tiên Cướp",
-    ["Carry Speed"] = "Tốc Độ Bê Trứng",
-    ["Over 100% may glitch"] = "Trên 100% có thể bị lỗi vị trí",
-    ["Anti Guard Panel"] = "Bảng Chống Vệ Sĩ",
+    -- TIỆN ÍCH NGOÀI MÀN HÌNH
     ["Anti Guard"] = "Chống Vệ Sĩ",
 
-    -- Auto Place Egg
+    -- TIẾN TRÌNH (AUTO PROGRESSION)
+    ["Auto Progression"] = "Tự Động Tiến Trình",
+    ["Auto Buy Trail"] = "Tự Mua Vệt Sáng",
+    ["Automatically buy available trails when affordable"] = "Tự động mua vệt sáng khi đủ tiền",
+    ["Auto Upgrade Base"] = "Tự Nâng Cấp Căn Cứ",
+    ["Automatically upgrade base when money is available"] = "Tự động nâng cấp căn cứ khi đủ tiền",
+    ["Auto Upgrade Treadmill"] = "Tự Nâng Cấp Máy Tập",
+    ["Automatically upgrade treadmill when money is available"] = "Tự động nâng cấp máy tập khi đủ tiền",
+    ["Auto Claim Index"] = "Tự Nhận Thưởng Chỉ Mục",
+    ["Claim index rewards as soon as they unlock"] = "Nhận thưởng chỉ mục ngay khi mở khóa",
+    ["Auto Claim"] = "Tự Nhận Thưởng",
+    ["Claim offline money & index rewards"] = "Nhận tiền offline & thưởng chỉ mục",
+
+    -- MÁY CHỦ (SERVER)
+    ["Auto Load Script"] = "Tự Động Nạp Script",
+    ["Server Hop Mode"] = "Chế Độ Đổi Server",
+    ["Server Hop"] = "Đổi Server",
+    ["Job ID"] = "Mã Phòng (Job ID)",
+    ["Paste a server Job ID..."] = "Dán mã Job ID máy chủ...",
+    ["Join Job ID"] = "Vào Bằng Job ID",
+    ["Copy Current Job ID"] = "Sao Chép Job ID Hiện Tại",
+    ["Rejoin Server"] = "Vào Lại Máy Chủ",
+    ["Auto Rejoin When Disconnect"] = "Tự Kết Nối Lại Khi Mất Mạng",
+
+    -- HIỆU NĂNG & TIỆN ÍCH
+    ["Performance"] = "Hiệu Năng",
+    ["FPS Cap"] = "Giới Hạn FPS",
+    ["Optimizer"] = "Tối Ưu Hóa (Giảm Lag)",
+    ["Strip shadows, textures and effects for the highest FPS"] = "Xóa bóng, bề mặt và hiệu ứng để tối đa FPS",
+    ["FPS and Ping Size"] = "Cỡ FPS & Ping",
+    ["FPS and Ping"] = "Hiện FPS & Ping",
+    ["Disable 3D Render"] = "Tắt Đồ Họa 3D",
+    ["Farm HUD"] = "Bảng Cày Cuốc (Farm HUD)",
+    ["Drag any panel to place it where you like"] = "Kéo bất kỳ bảng nào đến vị trí bạn muốn",
+    ["Utility"] = "Tiện Ích",
+    ["Anti AFK"] = "Chống Treo Máy (Anti AFK)",
+
+    -- DÒ TÌM TRỨNG
+    ["Egg Finder"] = "Dò Tìm Trứng",
+    ["Joins new servers to find eggs that match the filters below"] = "Tự vào server mới để tìm trứng khớp bộ lọc dưới",
+    ["Turn on Auto Hop to start hunting"] = "Bật Tự Đổi Máy Chủ để bắt đầu săn trứng",
+    ["Hop Mode"] = "Chế Độ Đổi Server",
+    ["When to move on to the next server"] = "Thời điểm chuyển sang máy chủ tiếp theo",
+    ["Rarity To Wait For"] = "Độ Hiếm Cần Đợi",
+    ["For After A Rare Spawns this rarity or higher"] = "Chờ sau khi xuất hiện trứng từ độ hiếm này trở lên",
+    ["For After A Rare Spawns: this rarity or higher"] = "Chờ sau khi xuất hiện trứng từ độ hiếm này trở lên",
+    ["Sync With Auto Steal Filters"] = "Đồng Bộ Bộ Lọc Cướp",
+    ["Changing a filter here also changes it in Auto Steal, and back"] = "Thay đổi bộ lọc tại đây sẽ đồng bộ với Tự Động Cướp",
+    ["First Hop Delay"] = "Độ Trễ Lần Đổi Server Đầu",
+    ["Wait after the script loads before the first hop"] = "Chờ sau khi nạp script hoàn tất trước khi đổi server",
+    ["Min Value To Find"] = "Giá Trị Min Cần Tìm",
+    ["Skip eggs worth less than this. Drag or type 350k, 50m, 10b"] = "Bỏ qua trứng giá nhỏ hơn mức này. Kéo hoặc nhập 350k, 50m, 10b",
+    ["Find eggs of the chosen rarity and every rarity above it"] = "Tìm trứng thuộc độ hiếm đã chọn và cao hơn",
+    ["Target Specific Eggs"] = "Mục Tiêu Trứng Chỉ Định",
+    ["Only look for these eggs (empty = all)"] = "Chỉ tìm các trứng này (trống = tất cả)",
+    ["Target Areas"] = "Khu Vực Mục Tiêu",
+
+    -- DISCORD WEBHOOK & PREDICTOR
+    ["Discord Webhook"] = "Webhook Discord",
+    ["Webhook URL"] = "Đường Dẫn Webhook",
+    ["Ping @everyone"] = "Tag @everyone",
+    ["Notify Stolen Eggs"] = "Báo Cáo Cướp Trứng",
+    ["Post eggs you bring home that match the filter"] = "Gửi thông báo các trứng mang về khớp bộ lọc",
+    ["Notify Fused Eggs"] = "Báo Cáo Trứng Dung Hợp",
+    ["Post eggs from the Fuse Machine that match the filter"] = "Gửi thông báo các trứng từ Máy Dung Hợp khớp bộ lọc",
+    ["Webhook Min Rarity"] = "Độ Hiếm Webhook Min",
+    ["Only post eggs of this rarity and above"] = "Chỉ gửi trứng từ độ hiếm này trở lên",
+    ["Webhook Min Value"] = "Giá Trị Webhook Min",
+    ["Only post eggs worth at least this. Drag or type 350k, 50m, 10b"] = "Chỉ gửi trứng đạt giá trị tối thiểu mức này. Kéo hoặc nhập 350k, 50m, 10b",
+    ["Egg Predictor"] = "Dự Đoán Trứng",
+    ["Lab Predictor"] = "Dự Đoán Phòng Lab",
+    ["Fuse Predictor"] = "Dự Đoán Dung Hợp",
+    ["Sort By"] = "Sắp Xếp Theo",
+    ["Preview Card"] = "Thẻ Xem Trước",
+    ["Search eggs..."] = "Tìm kiếm trứng...",
+    ["FLY TO EGG"] = "BAY ĐẾN TRỨNG",
+
+    -- ADMIN
+    ["Capture The Egg"] = "Cướp Trứng Sự Kiện",
+    ["Turn on Capture The Egg below to join the event"] = "Bật Cướp Trứng Sự Kiện bên dưới để tham gia",
+    ["Auto Capture Event Egg"] = "Tự Cướp Trứng Sự Kiện",
+    ["Take It From The Holder"] = "Giật Trứng Từ Người Bê",
+    ["Hold Height"] = "Độ Cao Bê Trứng",
+    ["Keep Away Distance"] = "Khoảng Cách Giữ An Toàn",
+    ["Admin Treadmill"] = "Máy Tập Admin",
+    ["Waiting for the Admin Treadmill"] = "Đang chờ Máy Tập Admin",
+    ["Auto Use Admin Treadmill"] = "Tự Dùng Máy Tập Admin",
+    ["Instant Steal V3 Note"] = "Ghi Chú Cướp Siêu Tốc V3",
+    ["Instant Steal V3"] = "Cướp Siêu Tốc V3",
+    ["Instant Steal V2"] = "Cướp Siêu Tốc V2",
+    ["Instant Steal"] = "Cướp Siêu Tốc",
+    ["Needs Admin Treadmill"] = "Cần Máy Tập Admin",
+    ["Toggle is off"] = "Đang tắt",
+
+    -- DANH MỤC TAB CÀY CUỐC
+    ["Racing Event"] = "Sự Kiện Đua Xe",
+    ["Shooting Star"] = "Sao Băng Rơi",
+    ["Dr Scramble Lab & Mech"] = "Phòng Lab & Robot Scramble",
+    ["Dr Scramble Lab"] = "Phòng Lab Dr. Scramble",
+    ["Butterfly Bloom"] = "Sự Kiện Bắt Bướm",
+    ["Wisp Companion"] = "Đồng Hành Wisp",
+    ["Auto Steal"] = "Tự Động Cướp Trứng",
+    ["Auto Mutation"] = "Tự Động Đột Biến",
     ["Auto Place Egg"] = "Tự Động Đặt Trứng",
+    ["Auto Treadmill"] = "Tự Động Máy Tập",
+    ["Auto Hatch & Equip"] = "Tự Ấp Trứng & Trang Bị",
+    ["Auto Sell"] = "Tự Động Bán",
+    ["Auto Sell Lab Egg"] = "Tự Động Bán Trứng Lab",
+    ["Auto Sell Egg"] = "Tự Động Bán Trứng",
+    ["Auto Sell Pet"] = "Tự Động Bán Pet",
+    ["Auto Fuse Machine"] = "Máy Dung Hợp Pet",
+    ["Auto Favorite"] = "Tự Động Khóa Pet",
+
+    -- CHI TIẾT FARM
+    ["Race Speed"] = "Tốc Độ Đua",
+    ["Auto Race"] = "Tự Động Đua Xe",
+    ["Race Shop Items"] = "Vật Phẩm Shop Đua",
+    ["Nitro Mutation"] = "Đột Biến Nitro",
+    ["Auto Equip Racer"] = "Tự Trang Bị Xe Tốt Nhất",
+    ["Auto Buy Race Shop"] = "Tự Mua Shop Đua Xe",
+    ["Auto Claim Race Rewards"] = "Tự Nhận Thưởng Đua Xe",
+    ["Auto Use Power-Ups"] = "Tự Dùng Đạo Cụ Tăng Tốc",
+    ["Racer"] = "Tay Đua",
+    ["Best Owned"] = "Tốt Nhất Đang Có",
+    ["Auto Catch Shooting Star"] = "Tự Động Bắt Sao Băng",
+    ["Shooting Star Status"] = "Trạng Thái Sao Băng",
+    ["Waiting for a shooting star"] = "Đang chờ sao băng rơi",
+    ["Mutate Priority"] = "Ưu Tiên Đột Biến",
+    ["Mutations To Use"] = "Loại Đột Biến Dùng",
+    ["Mutate Target Eggs"] = "Mục Tiêu Trứng Đột Biến",
+    ["Mutate Min Value"] = "Giá Trị Đột Biến Min",
+    ["Auto Mutate"] = "Tự Động Đột Biến",
+    ["Mutate Status"] = "Trạng Thái Đột Biến",
+    ["Auto Buy Nitro"] = "Tự Mua Nitro",
+    ["Mutate Min Rarity"] = "Độ Hiếm Đột Biến Min",
+    ["Steal eggs of the chosen rarity and every rarity above it"] = "Cướp trứng thuộc độ hiếm đã chọn và cao hơn",
+    ["Min Steal Value"] = "Giá Trị Cướp Min",
+    ["Steal Missing Lab Eggs"] = "Cướp Trứng Lab Còn Thiếu",
+    ["Steal Missing Index Eggs"] = "Cướp Trứng Sách Còn Thiếu",
+    ["Also steal eggs missing from your index, highest area first"] = "Cướp trứng thiếu trong sách, ưu tiên khu cao nhất",
+    ["Steal Priority"] = "Ưu Tiên Cướp",
+    ["Tween Speed"] = "Tốc Độ Bay (Tween)",
+    ["Over 100% may glitch"] = "Trên 100% có thể bị lỗi vị trí",
+    ["Carry Speed"] = "Tốc Độ Bê Trứng",
+    ["Anti Guard Panel"] = "Bảng Chống Vệ Sĩ",
+    ["Delivers the egg to the safe zone in a few seconds, needs enough Speed"] = "Vận chuyển trứng về căn cứ trong vài giây (cần đủ tốc độ)",
+    ["Instant Steal Steps"] = "Số Bước Cướp Siêu Tốc",
+    ["Higher is safer but takes longer"] = "Càng nhiều bước càng an toàn nhưng bay chậm hơn",
     ["Place Egg Rule"] = "Quy Tắc Đặt Trứng",
     ["Place Egg Order"] = "Thứ Tự Đặt Trứng",
     ["Place Rarities"] = "Độ Hiếm Đặt Trứng",
-    ["Only place eggs of the picked rarities (empty = all)"] = "Chỉ đặt trứng thuộc các độ hiếm đã chọn (trống = tất cả)",
-    ["Place Specific Eggs"] = "Chọn Đích Danh Trứng Cần Đặt",
-    ["Only place these eggs (empty = all)"] = "Chỉ đặt các trứng này (trống = tất cả)",
+    ["Only place eggs of the picked rarities (empty = all)"] = "Chỉ đặt trứng thuộc độ hiếm đã chọn (trống = tất cả)",
+    ["Place Specific Eggs"] = "Chọn Đích Danh Trứng Đặt",
+    ["Only place these eggs (empty = all)"] = "Chỉ đặt các loại trứng này (trống = tất cả)",
     ["Min Place Value"] = "Giá Trị Đặt Min",
-    ["Skip eggs worth less than this (0 = off)"] = "Bỏ qua trứng giá trị thấp hơn mức này (0 = tắt)",
-    ["Stay On Treadmill"] = "Cố Định Trên Máy Tập",
-    ["Auto Treadmill"] = "Tự Động Máy Tập",
-
-    -- Auto Hatch
-    ["Auto Hatch & Equip"] = "Tự Ấp Trứng & Trang Bị",
+    ["Skip eggs worth less than this (0 = off)"] = "Bỏ qua trứng giá nhỏ hơn mức này (0 = tắt)",
+    ["Stay On Treadmill"] = "Luôn Ở Trên Máy Tập",
     ["Auto Hatch"] = "Tự Động Ấp Trứng",
     ["Hatch Min Rarity"] = "Độ Hiếm Ấp Min",
     ["Hatch eggs of the chosen rarity and every rarity above it"] = "Ấp trứng từ độ hiếm đã chọn trở lên",
     ["Min Hatch Value"] = "Giá Trị Ấp Min",
-    ["Hatch Specific Eggs"] = "Chọn Đích Danh Trứng Cần Ấp",
+    ["Hatch Specific Eggs"] = "Chọn Đích Danh Trứng Ấp",
     ["Auto Equip Best"] = "Tự Trang Bị Pet Tốt Nhất",
-    ["Equip Best when a better pet appears"] = "Tự trang bị khi có pet mạnh hơn xuất hiện",
-
-    -- Auto Sell
-    ["Auto Sell"] = "Tự Động Bán",
-    ["Auto Sell Pet"] = "Tự Động Bán Pet",
-    ["Auto Sell Egg"] = "Tự Động Bán Trứng",
-    ["Auto Sell Lab Egg"] = "Tự Động Bán Trứng Lab",
+    ["Equip Best when a better pet appears"] = "Tự trang bị khi xuất hiện pet mạnh hơn",
     ["Sell Pets Now"] = "Bán Pet Ngay",
-    ["Sell matching pets once"] = "Bán các pet khớp điều kiện một lần",
+    ["Sell matching pets once"] = "Bán một lần các pet khớp điều kiện",
     ["Sell Pet Rule"] = "Quy Tắc Bán Pet",
-    ["Which checks must pass to sell"] = "Các điều kiện bắt buộc để bán",
-    ["Pet Max Rarity"] = "Độ Hiếm Pet Max Cần Bán",
+    ["Pet Max Rarity"] = "Độ Hiếm Bán Pet Max",
     ["Sell pets at or below this rarity"] = "Bán pet từ độ hiếm này trở xuống",
-    ["Pet Sell Value"] = "Giá Trị Bán Pet Min",
-    ["Sell pets worth less than this (0 = off)"] = "Bán pet có giá trị nhỏ hơn mức này (0 = tắt)",
+    ["Pet Sell Value"] = "Giá Trị Bán Pet",
     ["Keep Mutated Pets"] = "Giữ Lại Pet Đột Biến",
-    ["Never sell mutated pets"] = "Không bao giờ bán pet có đột biến",
     ["Blacklist Sell Pets"] = "Danh Sách Đen Bán Pet",
-    ["These pets are never sold"] = "Những pet này sẽ không bao giờ bị bán",
     ["Sell bag eggs matching the rules below"] = "Bán trứng trong túi khớp quy tắc dưới",
     ["Sell Eggs Now"] = "Bán Trứng Ngay",
     ["Sell matching eggs once"] = "Bán một lần các trứng khớp điều kiện",
     ["Sell Egg Rule"] = "Quy Tắc Bán Trứng",
-    ["Egg Max Rarity"] = "Độ Hiếm Trứng Max Cần Bán",
+    ["Egg Max Rarity"] = "Độ Hiếm Bán Trứng Max",
     ["Sell eggs at or below this rarity"] = "Bán trứng từ độ hiếm này trở xuống",
-    ["Egg Sell Value"] = "Giá Trị Bán Trứng Min",
+    ["Egg Sell Value"] = "Giá Trị Bán Trứng",
     ["Keep Mutated Eggs"] = "Giữ Lại Trứng Đột Biến",
-    ["Never sell mutated eggs"] = "Không bao giờ bán trứng có đột biến",
     ["Blacklist Sell Eggs"] = "Danh Sách Đen Bán Trứng",
-    ["These eggs are never sold"] = "Những trứng này sẽ không bao giờ bị bán",
-    ["Sell eggs traded from Dr Scramble that match the filters below"] = "Bán trứng đổi từ Dr Scramble khớp bộ lọc dưới",
     ["Sell Lab Eggs Now"] = "Bán Trứng Lab Ngay",
-    ["Sell matching Lab eggs once"] = "Bán một lần các trứng Lab khớp điều kiện",
     ["Sell Lab Egg Rule"] = "Quy Tắc Bán Trứng Lab",
-    ["Lab Egg Max Rarity"] = "Độ Hiếm Trứng Lab Max Cần Bán",
-    ["Sell Lab eggs at or below this rarity (Off = none by rarity)"] = "Bán trứng Lab từ độ hiếm này trở xuống (Off = tắt)",
-    ["Lab Egg Sell Value"] = "Giá Trị Bán Trứng Lab Min",
-    ["Sell Lab eggs worth less than this (0 = off)"] = "Bán trứng Lab giá trị thấp hơn mức này (0 = tắt)",
+    ["Lab Egg Max Rarity"] = "Độ Hiếm Bán Trứng Lab Max",
+    ["Lab Egg Sell Value"] = "Giá Trị Bán Trứng Lab",
     ["Keep Mutated Lab Eggs"] = "Giữ Lại Trứng Lab Đột Biến",
-    ["Never sell mutated Lab eggs"] = "Không bao giờ bán trứng Lab có đột biến",
     ["Keep Lab Pets"] = "Giữ Lại Pet Lab",
-    ["Lab eggs of these pets are never sold"] = "Trứng Lab của những pet này sẽ không bao giờ bị bán",
-
-    -- Auto Fuse
-    ["Auto Fuse Machine"] = "Máy Dung Hợp Pet",
     ["No three matching pets"] = "Không đủ 3 pet trùng khớp",
-    ["Fuse 3 same pets into an egg, nonstop"] = "Ghép 3 pet cùng loại thành 1 trứng liên tục",
+    ["Fuse 3 same pets into an egg, nonstop"] = "Dung hợp 3 pet cùng loại thành 1 trứng liên tục",
     ["Fuse Priority Mode"] = "Chế Độ Ưu Tiên Dung Hợp",
     ["Pets To Use"] = "Loại Pet Sử Dụng",
     ["Max Rarity to Fuse"] = "Độ Hiếm Dung Hợp Max",
-    ["Specific Species to Fuse"] = "Chỉ Định Loài Cần Dung Hợp",
-    ["Only fuse these species (empty = all)"] = "Chỉ ghép loài này (trống = tất cả)",
+    ["Specific Species to Fuse"] = "Chỉ Định Loài Dung Hợp",
     ["Skip Mutated Pets"] = "Bỏ Qua Pet Đột Biến",
     ["Eject Incomplete Slots"] = "Nhả Các Ô Chưa Đủ Bộ",
-    ["Take out pets that can't make a set"] = "Đẩy ra các pet không thể ghép đủ bộ 3",
-
-    -- Auto Favorite
-    ["Auto Favorite"] = "Tự Động Khóa Pet",
     ["Auto Favorite Pet"] = "Tự Động Khóa Pet",
-    ["Favorite pets matching the rules below"] = "Khóa các pet khớp quy tắc bên dưới",
     ["Favorite Pets Now"] = "Khóa Pet Ngay",
-    ["Favorite matching pets once"] = "Khóa các pet khớp điều kiện một lần",
     ["Favorite Rule"] = "Quy Tắc Khóa",
-    ["Pass any check or all checks"] = "Thỏa mãn một hoặc tất cả điều kiện",
     ["Favorite Min Rarity"] = "Độ Hiếm Khóa Min",
-    ["Favorite pets of the chosen rarity and every rarity above it (Off = skip)"] = "Khóa pet từ độ hiếm đã chọn trở lên (Off = bỏ qua)",
     ["Favorite Mutations"] = "Đột Biến Cần Khóa",
-    ["Mutation check (empty = skip)"] = "Kiểm tra đột biến (trống = bỏ qua)",
     ["Min Favorite Value"] = "Giá Trị Khóa Min",
-    ["Value check (0 = skip)"] = "Kiểm tra giá trị (0 = bỏ qua)",
     ["Always Favorite Species"] = "Luôn Khóa Các Loài Này",
-    ["Always favorite these species"] = "Luôn luôn khóa những loài này",
     ["Auto Favorite Equipped"] = "Tự Khóa Pet Đang Dùng",
-    ["Keep equipped pets favorited"] = "Luôn giữ pet đang trang bị được khóa",
     ["Auto Unfavorite Equipped"] = "Tự Bỏ Khóa Pet Đang Dùng",
-    ["Unfavorite equipped pets not in the rules"] = "Mở khóa pet đang trang bị nếu không đúng quy tắc",
-    ["Favorite Equipped Now"] = "Khóa Pet Đang Dùng Ngay",
-    ["Favorite all equipped pets once"] = "Khóa tất cả pet đang trang bị một lần",
-    ["Unfavorite Equipped Now"] = "Bỏ Khóa Pet Đang Dùng Ngay",
-    ["Unfavorite all equipped pets once"] = "Mở khóa tất cả pet đang trang bị một lần",
-
-    -- Dr Scramble / Lab / Mech
-    ["Dr Scramble Event"] = "Sự Kiện Dr Scramble",
-    ["Auto Mech Boss"] = "Tự Động Đánh Boss Robot",
-    ["Mech Tween Speed"] = "Tốc Độ Bay Đánh Boss",
-    ["Mech Tốc Độ Bay (Tween)"] = "Tốc Độ Bay Đánh Boss",
-    ["Main Weapon Hold"] = "Thời Gian Giữ Vũ Khí Chính",
-    ["Scrambler Hold"] = "Thời Gian Giữ Súng Biến Đổi",
-    ["Swap Two Weapons"] = "Tự Đổi Qua Lại 2 Vũ Khí",
-    ["Boss Server Hop"] = "Tự Đổi Server Săn Boss",
-    ["Boss Đổi Máy Chủ Ngay"] = "Tự Đổi Server Săn Boss",
-    ["After each boss, hops to a less crowded server to fight again"] = "Sau mỗi boss, đổi sang server vắng hơn để đánh tiếp",
-    ["Keep Hopping For"] = "Thời Gian Đổi Server Liên Tục",
-    ["Keeps fighting every boss it finds and hopping for this long"] = "Liên tục săn boss tìm được và đổi server trong thời gian này",
-    ["Auto Claim Mastery"] = "Tự Nhận Thưởng Tinh Thông Boss",
-    ["Tự Động Nhận Thưởng Mastery"] = "Tự Nhận Thưởng Tinh Thông Boss",
-    ["Claims Boss Mastery rewards as soon as they unlock"] = "Tự nhận thưởng Tinh Thông Boss ngay khi mở khóa",
-    ["Lab Banners"] = "Biểu Ngữ Phòng Lab",
-    ["Only trade and steal for these banners (empty = all)"] = "Chỉ đổi và cướp các biểu ngữ này (trống = tất cả)",
-    ["Auto Lab Trade-In"] = "Tự Đổi Đồ Phòng Thí Nghiệm",
-    ["Auto Reroll Lab Recipe"] = "Tự Đổi Công Thức Phòng Lab",
-    ["Auto Place Lab Reward Eggs"] = "Tự Đặt Trứng Thưởng Lab",
-    ["Places the reward eggs from Lab trades"] = "Tự động đặt trứng thưởng nhận từ đổi đồ phòng lab",
-    ["Auto Buy Scramble Shop"] = "Tự Mua Shop Dr. Scramble",
-    ["Buy the picked items with Samples"] = "Dùng Mẫu Vật (Samples) mua các vật phẩm đã chọn",
-    ["Scramble Shop Items"] = "Vật Phẩm Cửa Hàng Scramble",
-    ["Keep Samples"] = "Giữ Lại Mẫu Vật Tối Thiểu",
-    ["Never spend below this many Samples"] = "Không bao giờ tiêu hao dưới mức mẫu vật này",
-    ["Auto Use Scrambled"] = "Tự Dùng Thuốc Biến Đổi Scrambled",
-    ["Turn it on to start applying Scrambled"] = "Bật lên để bắt đầu áp dụng thuốc Scrambled",
-    ["Auto Buy Scrambled"] = "Tự Mua Thêm Scrambled Khi Hết",
-    ["Buy another Scrambled from the event shop when you run out"] = "Tự mua thêm Scrambled từ shop sự kiện khi dùng hết",
-    ["Mutation Min Rarity"] = "Độ Hiếm Đột Biến Min",
-    ["Only eggs of this rarity and above are used"] = "Chỉ dùng trứng từ độ hiếm này trở lên",
-    ["Min Mutation Value"] = "Giá Trị Đột Biến Min",
-    ["Mutation Priority"] = "Ưu Tiên Đột Biến",
-    ["Which egg gets the consumable first"] = "Trứng nào được ưu tiên dùng thuốc trước",
-    ["Mutation Target Eggs"] = "Mục Tiêu Trứng Đột Biến",
-    ["Only use the consumable on these eggs (empty = all)"] = "Chỉ dùng thuốc lên các trứng này (trống = tất cả)",
-    ["Need a Scrambled consumable"] = "Cần vật phẩm Scrambled",
-    ["Buy Scrambled from the event shop"] = "Mua Scrambled từ shop sự kiện",
-    ["Unstable DNA"] = "DNA Không Ổn Định (Unstable DNA)",
-
-    -- Butterfly Bloom
     ["Auto Butterfly Bloom"] = "Tự Động Bắt Bướm",
-    ["Tự động Butterfly Bloom"] = "Tự Động Bắt Bướm",
     ["Catch Mode"] = "Chế Độ Bắt",
     ["Catch Priority"] = "Ưu Tiên Bắt",
-    ["Only for Chase mode"] = "Chỉ dùng cho chế độ Đuổi theo",
-    ["Catch Butterflies"] = "Chọn Bướm Cần Bắt",
+    ["Catch Butterflies"] = "Chọn Bướm Muốn Bắt",
     ["Radiant Butterfly"] = "Bướm Rực Rỡ",
     ["Amethyst Butterfly"] = "Bướm Thạch Anh Tím",
     ["Sapphire Butterfly"] = "Bướm Lam Ngọc (Sapphire)",
     ["Emerald Butterfly"] = "Bướm Lục Bảo (Emerald)",
-    ["Tween Speed"] = "Tốc Độ Bay (Tween)",
-    ["Tốc Độ Bay (Tween)"] = "Tốc Độ Bay (Tween)",
     ["Auto Trade Up"] = "Tự Nâng Cấp Bướm",
     ["Trade Up Tiers"] = "Bậc Nâng Cấp",
     ["Smart Trade For Essence"] = "Đổi Bướm Lấy Tinh Chất Thông Minh",
     ["Going to the middle of the bloom"] = "Đang đi tới trung tâm khu bướm nở",
-
-    -- Essence
     ["Auto Craft Essence"] = "Tự Chế Tạo Tinh Chất",
     ["Auto Use Enchanted Essence"] = "Tự Dùng Tinh Chất Phù Phép",
-    ["Essence Min Rarity"] = "Độ Hiếm Nhận Tinh Chất Min",
-    ["Essence Độ Hiếm Tối Thiểu"] = "Độ Hiếm Nhận Tinh Chất Min",
-    ["Only eggs of this rarity and above get the essence"] = "Chỉ trứng đạt độ hiếm này trở lên mới nhận tinh chất",
-    ["Essence Min Value"] = "Giá Trị Nhận Tinh Chất Min",
-    ["Essence Min Giá trị"] = "Giá Trị Nhận Tinh Chất Min",
-    ["Skip eggs worth less than this (0 = off)"] = "Bỏ qua trứng giá trị nhỏ hơn mức này (0 = tắt)",
-    ["Essence Target Eggs"] = "Mục Tiêu Trứng Nhận Tinh Chất",
-    ["Essence Target Trứng"] = "Mục Tiêu Trứng Nhận Tinh Chất",
-    ["Only use the essence on these eggs (empty = all)"] = "Chỉ dùng tinh chất lên trứng này (trống = tất cả)",
-    ["Essence Priority"] = "Ưu Tiên Dùng Tinh Chất",
-    ["Which egg gets the essence first"] = "Trứng nào được ưu tiên nhận tinh chất trước",
-    ["Essence Skip Enchanted Eggs"] = "Bỏ Qua Trứng Đã Phù Phép",
-    ["Essence Skip Enchanted Trứng"] = "Bỏ Qua Trứng Đã Phù Phép",
-    ["Skip eggs that already got Enchanted, other mutations still get the essence"] = "Bỏ qua trứng đã phù phép, đột biến khác vẫn nhận tinh chất",
-
-    -- Chase Settings
+    ["Auto Wisp"] = "Tự Động Nhặt Wisp",
+    ["Auto Banjo Cricket"] = "Tự Động Bắt Dế Banjo",
     ["Chase Settings"] = "Cài Đặt Đuổi Đánh",
     ["Hit Tween Speed"] = "Tốc Độ Bay Đánh",
     ["Hit Max Speed"] = "Tốc Độ Đánh Tối Đa",
-    ["Hit Lead"] = "Đón Đầu Đòn Đánh (Hit Lead)",
-    ["Stand further ahead of the target (i.e. or closer to them)"] = "Đứng đón đầu mục tiêu xa hơn (hoặc áp sát gần hơn)",
-    ["Hit Sweep"] = "Góc Quét Đòn Đánh (Hit Sweep)",
-    ["How far you swipe back and forth in front of the target"] = "Khoảng cách vung vũ khí quét qua lại trước mục tiêu",
-    ["Add/Remove Hits On Quick Bar 2"] = "Thêm/Bỏ Nút Đánh Vào Quick Bar 2",
-    ["Pin or unpin the hit toggles on Quick Bar 2"] = "Ghim hoặc bỏ ghim các nút đánh trên Quick Bar 2",
+    ["Hit Lead"] = "Đón Đầu Mục Tiêu (Hit Lead)",
+    ["Hit Sweep"] = "Quét Đòn Đánh (Hit Sweep)",
     ["Auto Hit Nearest Player"] = "Tự Đánh Người Gần Nhất",
-    ["Auto Hit Egg Holders"] = "Tự Đánh Người Đang Bê Trứng",
+    ["Auto Hit Egg Holders"] = "Tự Đánh Người Bê Trứng",
     ["Auto Hit Specific Player"] = "Tự Đánh Người Chỉ Định",
     ["Hit Player"] = "Chọn Người Cần Đánh",
     ["Hit Aura"] = "Vòng Đánh Tự Động (Hit Aura)",
-    ["Instant Prompts"] = "Tương Tác Phím Nhanh (Instant E)",
-
-    -- Movement / Character
-    ["Movement"] = "Di Chuyển",
-    ["Character"] = "Nhân Vật",
     ["Speed Boost"] = "Tăng Tốc Chạy",
     ["Boost Speed"] = "Tốc Độ Tăng Tốc",
     ["Infinite Jump"] = "Nhảy Vô Hạn",
     ["Invisibility"] = "Tàng Hình (Invisibility)",
-    ["Makes you invisible to other players"] = "Làm bạn vô hình trước người chơi khác",
     ["Anti Ragdoll"] = "Chống Ngã (Anti Ragdoll)",
     ["Anti Trap"] = "Chống Bẫy (Anti Trap)",
-    ["Traps from other players cannot catch you"] = "Bẫy của người khác không thể bắt được bạn",
-    ["Combat"] = "Chiến Đấu",
-
-    -- ESP
-    ["ESP"] = "Định Vị (ESP)",
+    ["Instant Prompts"] = "Tương Tác Nhanh (Instant E)",
     ["ESP Eggs"] = "ESP Trứng",
-    ["ESP Fixed Size"] = "Cỡ ESP Cố Định",
-    ["ESP Own Base Eggs"] = "Hiện Trứng Căn Cứ Mình",
-    ["Also show the eggs placed in your own base"] = "Hiển thị cả trứng đã đặt tại căn cứ của bạn",
-    ["ESP Min Rarity"] = "Độ Hiếm ESP Min",
-    ["Show eggs of the chosen rarity and every rarity above it"] = "Hiện trứng từ độ hiếm đã chọn trở lên",
-    ["ESP Show Info"] = "Hiện Thông Tin ESP",
-    ["Min ESP Value"] = "Giá Trị ESP Min",
-    ["ESP Egg Size"] = "Cỡ ESP Trứng",
     ["ESP Guards"] = "ESP Vệ Sĩ",
-    ["ESP Guard Size"] = "Cỡ ESP Vệ Sĩ",
     ["ESP Lost Parts"] = "ESP Phụ Tùng Rơi",
     ["ESP Players"] = "ESP Người Chơi",
-    ["ESP Player Info"] = "Thông Tin ESP Người Chơi",
-    ["ESP Player Size"] = "Cỡ ESP Người Chơi",
-
-    -- Predictor
-    ["Predictor"] = "Dự Đoán",
-    ["Egg Predictor"] = "Dự Đoán Trứng",
-    ["Lab Predictor"] = "Dự Đoán Phòng Lab",
-    ["Fuse Predictor"] = "Dự Đoán Dung Hợp",
-    ["Search eggs..."] = "Tìm kiếm trứng...",
-    ["FLY TO EGG"] = "BAY ĐẾN TRỨNG",
-    ["Biohazard Pets"] = "Pet Phóng Xạ (Biohazard)",
-    ["CURRENT RECIPE"] = "CÔNG THỨC HIỆN TẠI",
-    ["REWARD ODDS - BIOHAZARD PETS"] = "TỈ LỆ THƯỞNG - PET PHÓNG XẠ",
-    ["Chase pet"] = "Đuổi bắt pet",
-    ["Machine is empty"] = "Máy đang trống",
-    ["Load 3 pets of the same species to see the result odds"] = "Đặt 3 pet cùng loài vào máy để xem tỉ lệ kết quả",
-    ["Sort By"] = "Sắp Xếp Theo",
-    ["Preview Card"] = "Thẻ Xem Trước",
-    ["Discord Webhook"] = "Cài Đặt Webhook Discord",
-
-    -- Progression
-    ["Auto Progression"] = "Tự Động Tiến Trình",
-    ["Auto Buy Trail"] = "Tự Mua Vệt Sáng (Trail)",
-    ["Automatically buy available trails when affordable"] = "Tự động mua vệt sáng có sẵn khi đủ tiền",
-    ["Auto Upgrade Base"] = "Tự Nâng Cấp Căn Cứ",
-    ["Automatically upgrade base when money is available"] = "Tự động nâng cấp căn cứ khi có tiền",
-    ["Auto Upgrade Treadmill"] = "Tự Nâng Cấp Máy Tập",
-    ["Automatically upgrade treadmill when money is available"] = "Tự động nâng cấp máy tập khi có tiền",
-    ["Auto Claim"] = "Tự Nhận Thưởng",
-    ["Claim offline money & index rewards"] = "Nhận tiền tích lũy offline & thưởng sách pet",
-    ["Auto Claim Index"] = "Tự Nhận Thưởng Sách Pet",
-    ["Claim index rewards as soon as they unlock"] = "Tự động nhận thưởng sách ngay khi mở khóa",
-
-    -- Server
-    ["Server Hop Mode"] = "Chế Độ Đổi Server",
-    ["Server Hop"] = "Đổi Server",
-    ["Job ID"] = "Mã Phòng (Job ID)",
-    ["Paste a server Job ID..."] = "Dán mã Job ID của server...",
-    ["Join Job ID"] = "Vào Bằng Job ID",
-    ["Copy Current Job ID"] = "Chép Job ID Hiện Tại",
-    ["Rejoin Server"] = "Vào Lại Server",
-    ["Auto Rejoin When Disconnect"] = "Tự Kết Nối Lại Khi Mất Mạng",
-    ["Joins new servers to find eggs that match the filters below"] = "Tự đổi server để tìm trứng khớp bộ lọc bên dưới",
-    ["Turn on Auto Hop to start hunting"] = "Bật Tự Đổi Server để bắt đầu săn trứng",
-    ["Hop Mode"] = "Chế Độ Đổi Server",
-    ["Rarity To Wait For"] = "Độ Hiếm Cần Giữ Chân",
-    ["For After A Rare Spawns this rarity or higher"] = "Chờ nếu xuất hiện trứng từ độ hiếm này trở lên",
-    ["Sync With Auto Steal Filters"] = "Đồng Bộ Bộ Lọc Cướp",
-    ["Changing a filter here also changes it in Auto Steal, and back"] = "Thay đổi bộ lọc tại đây sẽ đồng bộ với mục Tự Động Cướp",
-    ["Find eggs of the chosen rarity and every rarity above it"] = "Tìm trứng thuộc độ hiếm đã chọn và cao hơn",
-    ["Min Value To Find"] = "Giá Trị Trứng Min Cần Tìm",
-    ["Skip eggs worth less than this. Drag or type 350k, 50m, 10b"] = "Bỏ qua trứng giá nhỏ hơn mức này. Kéo hoặc nhập 350k, 50m, 10b",
-    ["First Hop Delay"] = "Độ Trễ Lần Đổi Server Đầu",
-    ["Wait after the script loads before the first hop"] = "Chờ sau khi nạp script hoàn tất trước khi đổi server",
-    ["Webhook URL"] = "Đường Dẫn Webhook",
-    ["Ping @everyone"] = "Tag @everyone",
-    ["Notify Stolen Eggs"] = "Báo Cáo Cướp Trứng",
-    ["Post every egg you bring home"] = "Gửi thông báo mỗi quả trứng mang về thành công",
-
-    -- Performance / Utility
-    ["Performance"] = "Hiệu Năng",
-    ["Utility"] = "Tiện Ích",
-    ["FPS Cap"] = "Giới Hạn FPS",
-    ["Optimizer"] = "Tối Ưu Hóa (Giảm Lag)",
-    ["Strip shadows, textures and effects for the highest FPS"] = "Xóa bóng, bề mặt và hiệu ứng để đạt FPS tối đa",
-    ["FPS and Ping"] = "Hiện FPS & Ping",
-    ["FPS and Ping Size"] = "Kích Cỡ FPS & Ping",
-    ["Disable 3D Render"] = "Tắt Đồ Họa 3D",
-    ["Farm HUD"] = "Bảng Cày Cuốc (Farm HUD)",
-    ["Drag any panel to place it where you like"] = "Kéo bất kỳ bảng nào đến vị trí bạn muốn",
-    ["Anti AFK"] = "Chống Treo Máy (Anti AFK)",
-    ["Auto Load Script"] = "Tự Động Nạp Script",
-
-    -- Egg Finder
-    ["Egg Finder"] = "Dò Tìm Trứng",
-    ["Quick Bar 1"] = "Thanh Phím Nhanh 1",
-    ["Quick Bar 2"] = "Thanh Phím Nhanh 2",
-
-    -- Wisp
-    ["Auto Wisp"] = "Tự Động Nhặt Wisp",
-    ["Auto Banjo Cricket"] = "Tự Động Bắt Dế Banjo",
-
-    -- Popup cảnh báo Instant Steal V2
-    ["Cuớp Siêu Tốc (Instant Steal) V2 may not work well below 40 FPS or above 200 ms ping."] = "Cướp Siêu Tốc (Instant Steal) V2 có thể hoạt động không tốt dưới 40 FPS hoặc ping trên 200 ms.",
-    ["Your FPS"] = "FPS của bạn",
-    ["Your Ping"] = "Ping của bạn",
-    ["ms"] = "ms",
-
-    -- Đếm số
+    ["Set Startup Config"] = "Cấu Hình Khởi Động",
+    ["Load Config"] = "Tải Cấu Hình",
+    ["Save Config"] = "Lưu Cấu Hình",
+    ["Import / Export"] = "Nhập / Xuất Cấu Hình",
+    ["Export Config"] = "Xuất Cấu Hình",
+    ["Import Config Text"] = "Nhập Văn Bản Cấu Hình",
+    ["Import Config"] = "Nhập Cấu Hình",
+    ["Creates a config only; use Load Config or Set Startup after"] = "Chỉ tạo cấu hình; hãy dùng Tải Cấu Hình hoặc Cài Khởi Động sau",
+    ["Pick a config, then press Load to apply it now"] = "Chọn một cấu hình, sau đó bấm Tải để áp dụng ngay",
     ["selected"] = "đã chọn"
 }
 
--- =========================================================
--- HÀM DỊCH (EXACT MATCH TRƯỚC, FALLBACK MAP_VI)
--- =========================================================
-local sortedKeys = {}
-for k in pairs(MAP_VI) do
-    table.insert(sortedKeys, k)
-end
-table.sort(sortedKeys, function(a,b) return #a > #b end)
-
-local escapePattern = function(s)
-    return (s:gsub("([%^%$%(%)%%%.%[%]%*%+%-%?])", "%%%1"))
-end
-
-local translateCache = {}
-
--- Bỏ qua text động (số, tiền, %, thời gian)
-local SKIP_PATTERNS = {
-    "^[%d%p%s]+$",
-    "^%$[%d%.]+[KMBT]?$",
-    "^%d+[KMBT]?$",
-    "^[+%-]%$[%d%.]+[KMBT]?$",
-    "^%d+%.%d+s$",
-    "^%d+/%d+$",
+local DYNAMIC_PATTERNS = {
+    { pattern = "ALL (%d+)", format = function(l, c) return l == "VI" and ("TẤT CẢ " .. c) or ("ALL " .. c) end },
+    { pattern = "READY (%d+)", format = function(l, c) return l == "VI" and ("SẴN SÀNG " .. c) or ("READY " .. c) end },
+    { pattern = "GROWING (%d+)", format = function(l, c) return l == "VI" and ("ĐANG LỚN " .. c) or ("GROWING " .. c) end },
+    { pattern = "IN BAG (%d+)", format = function(l, c) return l == "VI" and ("TRONG TÚI " .. c) or ("IN BAG " .. c) end },
+    { pattern = "Ends in (%d+h %d+m %d+s)", format = function(l, t) return l == "VI" and ("Kết thúc sau " .. t) or ("Ends in " .. t) end },
+    { pattern = "Players (%d+)/(%d+)", format = function(l, p1, p2) return l == "VI" and string.format("Người chơi %s/%s", p1, p2) or string.format("Players %s/%s", p1, p2) end },
+    { pattern = "#(%d+) of (%d+) eggs by value", format = function(l, r, t) return l == "VI" and string.format("#%s / %s trứng theo giá trị", r, t) or string.format("#%s of %s eggs by value", r, t) end },
+    { pattern = "Eggs placed (%d+)/(%d+) %- (%d+)/(%d+) pets equipped, (%d+) in bag", format = function(l, p1, p2, p3, p4, p5)
+        return l == "VI" and string.format("Trứng đã đặt %s/%s - %s/%s pet trang bị, %s trong túi", p1, p2, p3, p4, p5) or string.format("Eggs placed %s/%s - %s/%s pets equipped, %s in bag", p1, p2, p3, p4, p5)
+    end },
+    { pattern = "Pet matches %- (%d+) pets? for %$(.+)", format = function(l, c, v)
+        return l == "VI" and string.format("Khớp pet - %s pet giá $%s", c, v) or string.format("Pet matches - %s pets for $%s", c, v)
+    end },
+    { pattern = "Egg matches %- (%d+) eggs? for %$(.+)", format = function(l, c, v)
+        return l == "VI" and string.format("Khớp trứng - %s trứng giá $%s", c, v) or string.format("Egg matches - %s eggs for $%s", c, v)
+    end }
 }
 
-local function shouldSkip(text)
-    for _, pat in ipairs(SKIP_PATTERNS) do
-        if text:match(pat) then return true end
-    end
-    return false
-end
+local SortedVI = {}
+for en, vi in pairs(MAP_VI) do table.insert(SortedVI, {en = en, out = vi, len = #en}) end
+table.sort(SortedVI, function(a, b) return a.len > b.len end)
 
-local function translateText(text)
-    if type(text) ~= "string" or text == "" then return text end
-    
-    -- Cache hit
-    local cached = translateCache[text]
-    if cached ~= nil then return cached end
+local function translateText(raw)
+    local cacheKey = currentLanguage .. "|" .. raw
+    if FastCache[cacheKey] then return FastCache[cacheKey] end
 
-    -- ƯU TIÊN 1: EXACT MATCH
-    local exact = EXACT_MATCH_VI[text]
-    if exact then
-        translateCache[text] = exact
-        return exact
+    if raw:find("Chilli Hub", 1, true) then
+        local fixedBrand = raw:gsub("Chilli Hub%s*V?[%d%.]*", BRAND)
+        if raw:match("^%s*Chilli Hub") then
+            FastCache[cacheKey] = fixedBrand
+            return fixedBrand
+        end
+        raw = fixedBrand
     end
 
-    -- ƯU TIÊN 2: MAP_VI EXACT
-    local mapped = MAP_VI[text]
-    if mapped then
-        translateCache[text] = mapped
-        return mapped
+    if currentLanguage == "EN" then
+        FastCache[cacheKey] = raw
+        return raw
     end
 
-    -- Skip text động
-    if shouldSkip(text) then
-        translateCache[text] = text
-        return text
+    local trimmed = raw:match("^%s*(.-)%s*$") or raw
+    if EXACT_MATCH_VI[trimmed] then
+        -- FIX: dùng replaceAll (plain) thay vì gsub (pattern) để chuỗi như "3 - Rare" khớp đúng
+        local res = replaceAll(raw, trimmed, EXACT_MATCH_VI[trimmed])
+        FastCache[cacheKey] = res
+        return res
     end
 
-    -- ƯU TIÊN 3: FALLBACK
-    local out = text
-    for _, en in ipairs(sortedKeys) do
-        local vi = MAP_VI[en]
-        if vi ~= en then
-            local pat = "%f[%w]" .. escapePattern(en) .. "%f[%W]"
-            out = out:gsub(pat, vi)
+    local result = raw
+    local matched = false
+
+    for _, item in ipairs(DYNAMIC_PATTERNS) do
+        if result:find(item.pattern) then
+            result = result:gsub(item.pattern, function(...)
+                return item.format(currentLanguage, ...)
+            end)
+            matched = true
         end
     end
 
-    translateCache[text] = out
-    return out
+    for _, item in ipairs(SortedVI) do
+        if result:find(item.en, 1, true) then
+            result = replaceAll(result, item.en, item.out)
+            matched = true
+        end
+    end
+
+    FastCache[cacheKey] = matched and result or raw
+    return FastCache[cacheKey]
 end
 
--- =========================================================
--- POLLING ENGINE + HOOK NGAY TỪ ĐẦU (FIX "LẦN 1 CHƯA DỊCH")
--- =========================================================
-local translating = false
-local trackedObjects = {}
+local TrackedElements = {}
 
-local IGNORE_GUI_NAMES = {
-    ["Chat"] = true,
-    ["Backpack"] = true,
-    ["PlayerList"] = true,
-    ["BubbleChat"] = true,
-    ["TouchGui"] = true,
-    ["TouchControlFrame"] = true,
-    ["ControlFrame"] = true,
-    ["Topbar"] = true,
-    ["StarterGui"] = true,
-    ["LangSelector"] = true,
-}
+local function applyTranslation(inst)
+    if not (inst:IsA("TextLabel") or inst:IsA("TextButton") or inst:IsA("TextBox")) then return end
+    if inst:FindFirstAncestor("Chilli_Dynamic_Island") or inst:FindFirstAncestor("Sparkling_New_Badge") then return end
+    if inst:GetAttribute("__IsTranslating") then return end
 
--- Hàm dịch + ghi đè
-local function translateAndApply(obj, entry)
-    if translating then return end
-    
-    local ok, cur = pcall(function() return obj.Text end)
-    if not ok or type(cur) ~= "string" or cur == "" then return end
-    
-    -- Nếu text hiện tại đã là bản dịch → bỏ qua
-    if cur == entry.lastTranslated then return end
-    
-    -- Nếu text không đổi so với lần trước → bỏ qua
-    if cur == entry.lastOriginal then return end
-    
-    entry.lastOriginal = cur
-    local new = translateText(cur)
-    
-    if new ~= cur then
-        translating = true
-        pcall(function() obj.Text = new end)
-        translating = false
-        entry.lastTranslated = new
-    else
-        entry.lastTranslated = cur
+    local original = inst:GetAttribute("OriginalRawText")
+    if not original then
+        original = inst.Text
+        inst:SetAttribute("OriginalRawText", original)
+    end
+
+    local mappedText = translateText(original)
+    if inst.Text ~= mappedText then
+        inst:SetAttribute("__IsTranslating", true)
+        inst:SetAttribute("__LastTranslatedText", mappedText)
+        pcall(function() inst.Text = mappedText end)
+        task.defer(function()
+            inst:SetAttribute("__IsTranslating", false)
+        end)
     end
 end
 
-local function registerObject(obj)
-    if not (obj:IsA("TextLabel") or obj:IsA("TextButton") or obj:IsA("TextBox")) then return end
-    if obj:GetAttribute("ChilliTracked") then return end
-    obj:SetAttribute("ChilliTracked", true)
-    
-    local entry = {
-        obj = obj,
-        lastOriginal = nil,
-        lastTranslated = nil,
-    }
-    table.insert(trackedObjects, entry)
-    
-    -- ✅ Dịch ngay lần đầu (có delay nhỏ để text được set)
+-- ==================== 4. ĐỔI MÀU & HUY HIỆU '✨ NEW' ====================
+local COLOR_FACE_TOP     = Color3.fromRGB(255, 130, 100)
+local COLOR_FACE_BOTTOM  = Color3.fromRGB(220, 70, 60)
+local COLOR_BEVEL_SHADOW = Color3.fromRGB(150, 35, 35)
+
+local TARGET_BUTTON_KEYWORDS = {
+    ["cày cuốc"] = true, ["farm"] = true,
+    ["người chơi"] = true, ["player"] = true,
+    ["dự đoán"] = true, ["predictor"] = true,
+    ["tiến trình"] = true, ["progress"] = true,
+    ["máy chủ"] = true, ["server"] = true,
+    ["khác"] = true, ["misc"] = true,
+    ["tự đổi máy chủ"] = true, ["tự đổi server"] = true, ["auto hop"] = true,
+    ["admin abuse"] = true, ["menu admin (abuse)"] = true,
+    ["discord"] = true,
+    ["phím tắt & key"] = true, ["quick & keys"] = true,
+    ["cài đặt"] = true, ["settings"] = true,
+    ["cấu hình"] = true, ["config"] = true
+}
+
+local function attachSparklingNewBadge(headerFrame)
+    if not headerFrame then return end
+    -- FIX: nếu huy hiệu đã tồn tại thì giữ nguyên, không tạo lại (trước đây bị tạo lại mỗi 0.25s)
+    if headerFrame:FindFirstChild("Sparkling_New_Badge") then return end
+
+    local Badge = Instance.new("Frame")
+    Badge.Name = "Sparkling_New_Badge"
+    Badge.Size = UDim2.new(0, 68, 0, 16)
+    -- Neo theo mép PHẢI của header, chừa khoảng trống cho nút X để không bị đè lên
+    Badge.AnchorPoint = Vector2.new(1, 0.5)
+    Badge.Position = UDim2.new(1, -42, 0.5, 0)
+    Badge.BackgroundColor3 = Color3.fromRGB(110, 30, 30)
+    Badge.BackgroundTransparency = 0.2
+    Badge.BorderSizePixel = 0
+    Badge.Parent = headerFrame
+
+    local BadgeCorner = Instance.new("UICorner")
+    BadgeCorner.CornerRadius = UDim.new(0, 5)
+    BadgeCorner.Parent = Badge
+
+    local BadgeStroke = Instance.new("UIStroke")
+    BadgeStroke.Thickness = 1.1
+    BadgeStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    BadgeStroke.Parent = Badge
+
+    local RainbowGrad = Instance.new("UIGradient")
+    RainbowGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0.00, Color3.fromRGB(255, 80, 80)),
+        ColorSequenceKeypoint.new(0.25, Color3.fromRGB(255, 215, 60)),
+        ColorSequenceKeypoint.new(0.50, Color3.fromRGB(60, 245, 140)),
+        ColorSequenceKeypoint.new(0.75, Color3.fromRGB(60, 180, 255)),
+        ColorSequenceKeypoint.new(1.00, Color3.fromRGB(255, 80, 80))
+    })
+    RainbowGrad.Parent = BadgeStroke
+
+    local BadgeLabel = Instance.new("TextLabel")
+    BadgeLabel.Size = UDim2.new(1, 0, 1, 0)
+    BadgeLabel.BackgroundTransparency = 1
+    BadgeLabel.Text = "✨ VIỆT HÓA"
+    BadgeLabel.Font = Enum.Font.GothamBold
+    BadgeLabel.TextSize = 8.5
+    BadgeLabel.TextWrapped = false
+    BadgeLabel.TextTruncate = Enum.TextTruncate.None
+    BadgeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    BadgeLabel.Parent = Badge
+
+    task.spawn(function()
+        while Badge and Badge.Parent do
+            RainbowGrad.Rotation = (RainbowGrad.Rotation + 3) % 360
+            RunService.RenderStepped:Wait()
+        end
+    end)
+end
+
+local function recolorSingleButton(btnContainer, labelObj)
+    if not btnContainer then return end
+
+    local grad = btnContainer:FindFirstChildOfClass("UIGradient")
+    if not grad then
+        grad = Instance.new("UIGradient")
+        grad.Rotation = 90
+        grad.Parent = btnContainer
+    end
+    grad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, COLOR_FACE_TOP),
+        ColorSequenceKeypoint.new(1, COLOR_FACE_BOTTOM)
+    })
+    btnContainer.BackgroundColor3 = COLOR_FACE_BOTTOM
+
+    if btnContainer.Parent and btnContainer.Parent:IsA("Frame") and btnContainer.Parent ~= btnContainer then
+        local p = btnContainer.Parent
+        if p.BackgroundColor3.R > 0.4 and p.BackgroundColor3.G < 0.35 then
+            p.BackgroundColor3 = COLOR_BEVEL_SHADOW
+        end
+    end
+
+    if labelObj and (labelObj:IsA("TextLabel") or labelObj:IsA("TextButton")) then
+        labelObj.TextColor3 = Color3.fromRGB(255, 255, 255)
+    end
+end
+
+local function recolorHeaderBar(headerFrame, titleObj)
+    if not headerFrame then return end
+    local grad = headerFrame:FindFirstChildOfClass("UIGradient")
+    if not grad then
+        grad = Instance.new("UIGradient")
+        grad.Rotation = 90
+        grad.Parent = headerFrame
+    end
+    grad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, COLOR_FACE_TOP),
+        ColorSequenceKeypoint.new(1, COLOR_FACE_BOTTOM)
+    })
+    headerFrame.BackgroundColor3 = COLOR_FACE_BOTTOM
+
+    if titleObj and (titleObj:IsA("TextLabel") or titleObj:IsA("TextButton")) then
+        titleObj.TextColor3 = Color3.fromRGB(255, 255, 255)
+        if titleObj.Text ~= BRAND then
+            titleObj.Text = BRAND
+        end
+    end
+
+    attachSparklingNewBadge(headerFrame)
+
+    for _, item in ipairs(headerFrame:GetDescendants()) do
+        if item:IsA("TextButton") or item:IsA("ImageButton") then
+            item.BackgroundColor3 = COLOR_FACE_BOTTOM
+            local xGrad = item:FindFirstChildOfClass("UIGradient")
+            if xGrad then
+                xGrad.Color = ColorSequence.new({
+                    ColorSequenceKeypoint.new(0, COLOR_FACE_TOP),
+                    ColorSequenceKeypoint.new(1, COLOR_FACE_BOTTOM)
+                })
+            end
+            if item:IsA("TextButton") then
+                item.TextColor3 = Color3.fromRGB(255, 255, 255)
+            end
+        end
+    end
+end
+
+local function inspectAndApplySoftBlue(inst)
+    if not (inst:IsA("TextLabel") or inst:IsA("TextButton")) then return end
+    if inst:FindFirstAncestor("Chilli_Dynamic_Island") or inst:FindFirstAncestor("Sparkling_New_Badge") then return end
+
+    local textRaw = inst.Text:lower():match("^%s*(.-)%s*$") or ""
+    if textRaw:find("chilli hub", 1, true) then
+        local headerFrame = inst:FindFirstAncestorOfClass("Frame")
+        if headerFrame then recolorHeaderBar(headerFrame, inst) end
+        return
+    end
+
+    if TARGET_BUTTON_KEYWORDS[textRaw] then
+        local btnTarget = inst:IsA("TextButton") and inst or inst:FindFirstAncestorOfClass("TextButton") or inst:FindFirstAncestorOfClass("Frame")
+        if btnTarget then recolorSingleButton(btnTarget, inst) end
+        return
+    end
+end
+
+local function hookElement(inst)
+    if not (inst:IsA("TextLabel") or inst:IsA("TextButton") or inst:IsA("TextBox")) then return end
+    if inst:GetAttribute("HasTranslateHook") then return end
+    inst:SetAttribute("HasTranslateHook", true)
+
+    table.insert(TrackedElements, inst)
     task.defer(function()
-        task.wait(0.05)
-        translateAndApply(obj, entry)
+        applyTranslation(inst)
+        inspectAndApplySoftBlue(inst)
     end)
-    
-    -- ✅ HOOK NGAY TỪ ĐẦU — đảm bảo mọi thay đổi text đều được dịch tức thì
-    obj:GetPropertyChangedSignal("Text"):Connect(function()
-        task.defer(function()
-            translateAndApply(obj, entry)
+
+    inst:GetPropertyChangedSignal("Text"):Connect(function()
+        if inst:GetAttribute("__IsTranslating") then return end
+        local current = inst.Text
+        if current == inst:GetAttribute("__LastTranslatedText") then return end
+        inst:SetAttribute("OriginalRawText", current)
+        applyTranslation(inst)
+        inspectAndApplySoftBlue(inst)
+    end)
+end
+
+local function updateAllActive()
+    for i = #TrackedElements, 1, -1 do
+        local el = TrackedElements[i]
+        if el and el.Parent then
+            applyTranslation(el)
+        else
+            table.remove(TrackedElements, i)
+        end
+    end
+end
+
+-- ==================== 5. CLICK AN TOÀN ====================
+local function stealthClick(inst)
+    if not inst then return end
+    local targets = {inst}
+    if inst.Parent and inst.Parent:IsA("GuiObject") then table.insert(targets, inst.Parent) end
+    local btnAncestor = inst:FindFirstAncestorWhichIsA("GuiButton")
+    if btnAncestor then table.insert(targets, btnAncestor) end
+
+    for _, obj in ipairs(targets) do
+        pcall(function()
+            if firesignal then
+                firesignal(obj.MouseButton1Click)
+                firesignal(obj.Activated)
+            end
         end)
-    end)
-    
-    -- ✅ Hook PlaceholderText cho TextBox
-    if obj:IsA("TextBox") then
-        obj:GetPropertyChangedSignal("PlaceholderText"):Connect(function()
-            task.defer(function()
-                if translating then return end
-                translating = true
-                local ok, ph = pcall(function() return obj.PlaceholderText end)
-                if ok and type(ph) == "string" and ph ~= "" then
-                    local new = translateText(ph)
-                    if new ~= ph then
-                        pcall(function() obj.PlaceholderText = new end)
+        pcall(function()
+            if getconnections then
+                for _, c in ipairs(getconnections(obj.MouseButton1Click)) do c:Fire() end
+                for _, c in ipairs(getconnections(obj.Activated)) do c:Fire() end
+            end
+        end)
+    end
+end
+
+-- ==================== 6. ĐỘNG CƠ NẠP CONFIG ====================
+local isConfigInjecting = false
+
+local function executeAutoConfig(statusCallback)
+    if isConfigInjecting then return end
+    isConfigInjecting = true
+
+    task.spawn(function()
+        statusCallback("⏳ Đang nạp...", Color3.fromRGB(255, 210, 90))
+
+        if switchGlobalLanguage then
+            switchGlobalLanguage("EN")
+            task.wait(0.3)
+        end
+
+        local roots = {gethui and gethui(), CoreGui, LocalPlayer:FindFirstChild("PlayerGui")}
+        local chilliGui = nil
+
+        for _, root in ipairs(roots) do
+            if root then
+                for _, g in ipairs(root:GetChildren()) do
+                    if g:IsA("ScreenGui") and g.Name ~= "Chilli_Dynamic_Island" then
+                        for _, d in ipairs(g:GetDescendants()) do
+                            if (d:IsA("TextLabel") or d:IsA("TextButton")) and d.Text:lower():find("chilli hub", 1, true) then
+                                chilliGui = g; break
+                            end
+                        end
+                    end
+                    if chilliGui then break end
+                end
+            end
+            if chilliGui then break end
+        end
+
+        if not chilliGui then
+            statusCallback("❌ Ko thấy Hub", Color3.fromRGB(255, 90, 90))
+            task.wait(2)
+            if updateIslandContentLanguage then updateIslandContentLanguage(currentLanguage) end
+            isConfigInjecting = false; return
+        end
+
+        -- 1. Mở Tab Config
+        local configTabElement = nil
+        for _, d in ipairs(chilliGui:GetDescendants()) do
+            if (d:IsA("TextLabel") or d:IsA("TextButton")) and d.Visible then
+                local t = d.Text:lower():match("^%s*(.-)%s*$") or ""
+                if t == "config" or t == "cấu hình" then
+                    configTabElement = d; break
+                end
+            end
+        end
+
+        if configTabElement then
+            stealthClick(configTabElement)
+            task.wait(0.35)
+        end
+
+        -- 2. Tìm ô TextBox Import
+        local importTextBox = nil
+        for _, d in ipairs(chilliGui:GetDescendants()) do
+            if d:IsA("TextBox") then
+                local ph = (d.PlaceholderText or ""):lower()
+                if ph:find("exported config", 1, true) then
+                    importTextBox = d; break
+                end
+            end
+        end
+
+        if not importTextBox then
+            for _, lbl in ipairs(chilliGui:GetDescendants()) do
+                if lbl:IsA("TextLabel") and lbl.Text:find("Import Config Text", 1, true) then
+                    local p = lbl.Parent
+                    if p then
+                        importTextBox = p:FindFirstChildWhichIsA("TextBox", true)
+                        if importTextBox then break end
                     end
                 end
-                translating = false
-            end)
-        end)
-    end
-end
-
-local function scanGui(gui)
-    if not gui:IsA("ScreenGui") then return end
-    if IGNORE_GUI_NAMES[gui.Name] then return end
-    local descendants = gui:GetDescendants()
-    for i, d in ipairs(descendants) do
-        registerObject(d)
-        if i % 30 == 0 then task.wait() end
-    end
-end
-
--- POLL_INTERVAL = 0.5 (MƯỢT)
-local POLL_INTERVAL = 0.5
-
-local function pollingLoop()
-    while true do
-        task.wait(POLL_INTERVAL)
-        
-        for i = #trackedObjects, 1, -1 do
-            local entry = trackedObjects[i]
-            local obj = entry.obj
-            
-            if not obj or not obj.Parent then
-                table.remove(trackedObjects, i)
-                continue
             end
-            
-            -- Quét để đảm bảo các label cũ được cập nhật
-            translateAndApply(obj, entry)
         end
-    end
-end
 
--- =========================================================
--- WATCHER
--- =========================================================
-local function startWatching()
-    task.wait(3)
-    local targets = { CoreGui, Players.LocalPlayer:WaitForChild("PlayerGui") }
-    for _, container in ipairs(targets) do
-        if container then
-            for _, gui in ipairs(container:GetChildren()) do
-                if gui:IsA("ScreenGui") and not IGNORE_GUI_NAMES[gui.Name] then
-                    task.spawn(function() scanGui(gui) end)
-                end
-            end
-            container.DescendantAdded:Connect(function(d)
-                if d:IsA("ScreenGui") and not IGNORE_GUI_NAMES[d.Name] then
-                    task.defer(function() scanGui(d) end)
-                elseif d:IsA("TextLabel") or d:IsA("TextButton") or d:IsA("TextBox") then
-                    task.defer(function() registerObject(d) end)
-                end
+        if not importTextBox then
+            statusCallback("❌ Ko thấy ô Import", Color3.fromRGB(255, 90, 90))
+            task.wait(2)
+            if updateIslandContentLanguage then updateIslandContentLanguage(currentLanguage) end
+            isConfigInjecting = false; return
+        end
+
+        -- 3. Nạp dữ liệu JSON
+        importTextBox.Text = RAW_CONFIG_JSON
+        task.wait(0.1)
+
+        if getconnections then
+            pcall(function()
+                for _, conn in ipairs(getconnections(importTextBox.FocusLost)) do conn:Fire(true) end
             end)
         end
-    end
-end
-
--- =========================================================
--- HÀM TẢI SCRIPT
--- =========================================================
-local function fetchScript(url)
-    local ok, res = pcall(function() return game:HttpGet(url) end)
-    if ok and type(res) == "string" and #res > 0 then return res end
-    for _, name in ipairs({"request","http_request","syn_request"}) do
-        local fn = _G[name]
-        if type(fn) == "function" then
-            local ok2, r = pcall(fn, {Url = url, Method = "GET"})
-            if ok2 and r and r.Body and #r.Body > 0 then return r.Body end
-        end
-    end
-    return nil
-end
-
--- =========================================================
--- UI CHỌN NGÔN NGỮ (COMPACT PREMIUM)
--- Icon: 🌶️ | Tiêu đề: CHILLI HUB VIỆT HÓA V4
--- =========================================================
-local gui = Instance.new("ScreenGui")
-gui.Name = "LangSelector"
-gui.ResetOnSpawn = false
-gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-gui.IgnoreGuiInset = true
-do
-    local ok = pcall(function() gui.Parent = CoreGui end)
-    if not ok or not gui.Parent then
-        gui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
-    end
-end
-
--- Background mờ
-local backdrop = Instance.new("Frame", gui)
-backdrop.Size = UDim2.new(1, 0, 1, 0)
-backdrop.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-backdrop.BackgroundTransparency = 1
-backdrop.BorderSizePixel = 0
-backdrop.ZIndex = 1
-
--- Khung chính (compact 360×180)
-local frame = Instance.new("Frame", gui)
-frame.Size = UDim2.new(0, 360, 0, 180)
-frame.Position = UDim2.new(0.5, -180, 0.5, -90)
-frame.BackgroundColor3 = Color3.fromRGB(16, 16, 22)
-frame.BorderSizePixel = 0
-frame.Active = true
-frame.ZIndex = 2
-
-local frameGradient = Instance.new("UIGradient", frame)
-frameGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(24, 24, 34)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(14, 14, 20)),
-})
-frameGradient.Rotation = 135
-
-Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 14)
-
-local glowStroke = Instance.new("UIStroke", frame)
-glowStroke.Color = Color3.fromRGB(255, 80, 80)
-glowStroke.Thickness = 1
-glowStroke.Transparency = 0.4
-
--- Shadow
-local shadow = Instance.new("Frame", gui)
-shadow.Size = frame.Size
-shadow.Position = frame.Position
-shadow.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
-shadow.BackgroundTransparency = 0.9
-shadow.BorderSizePixel = 0
-shadow.ZIndex = 1
-Instance.new("UICorner", shadow).CornerRadius = UDim.new(0, 16)
-
--- Header
-local header = Instance.new("Frame", frame)
-header.Size = UDim2.new(1, 0, 0, 40)
-header.Position = UDim2.new(0, 0, 0, 0)
-header.BackgroundTransparency = 1
-
--- Icon ớt 🌶️
-local titleIcon = Instance.new("TextLabel", header)
-titleIcon.Size = UDim2.new(0, 30, 1, 0)
-titleIcon.Position = UDim2.new(0, 14, 0, 0)
-titleIcon.BackgroundTransparency = 1
-titleIcon.Text = "🌶️"
-titleIcon.Font = Enum.Font.GothamBold
-titleIcon.TextSize = 18
-
--- Tiêu đề
-local titleText = Instance.new("TextLabel", header)
-titleText.Size = UDim2.new(1, -100, 1, 0)
-titleText.Position = UDim2.new(0, 44, 0, 0)
-titleText.BackgroundTransparency = 1
-titleText.Text = "CHILLI HUB VIỆT HÓA V4"
-titleText.TextColor3 = Color3.fromRGB(255, 100, 100)
-titleText.Font = Enum.Font.GothamBold
-titleText.TextSize = 12
-titleText.TextXAlignment = Enum.TextXAlignment.Left
-
--- Nút đóng
-local closeBtn = Instance.new("TextButton", header)
-closeBtn.Size = UDim2.new(0, 24, 0, 24)
-closeBtn.Position = UDim2.new(1, -34, 0.5, -12)
-closeBtn.BackgroundColor3 = Color3.fromRGB(40, 20, 20)
-closeBtn.Text = "✕"
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextSize = 12
-closeBtn.TextColor3 = Color3.fromRGB(255, 120, 120)
-closeBtn.BorderSizePixel = 0
-closeBtn.AutoButtonColor = false
-Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0, 6)
-
-closeBtn.MouseEnter:Connect(function()
-    TweenService:Create(closeBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(255, 60, 60)}):Play()
-    TweenService:Create(closeBtn, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
-end)
-closeBtn.MouseLeave:Connect(function()
-    TweenService:Create(closeBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(40, 20, 20)}):Play()
-    TweenService:Create(closeBtn, TweenInfo.new(0.15), {TextColor3 = Color3.fromRGB(255, 120, 120)}):Play()
-end)
-closeBtn.MouseButton1Click:Connect(function()
-    TweenService:Create(frame, TweenInfo.new(0.2), {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}):Play()
-    TweenService:Create(shadow, TweenInfo.new(0.2), {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}):Play()
-    task.wait(0.2)
-    gui:Destroy()
-end)
-
--- Divider
-local divider = Instance.new("Frame", frame)
-divider.Size = UDim2.new(1, -24, 0, 1)
-divider.Position = UDim2.new(0, 12, 0, 40)
-divider.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
-divider.BorderSizePixel = 0
-divider.BackgroundTransparency = 0.6
-local dividerGradient = Instance.new("UIGradient", divider)
-dividerGradient.Transparency = NumberSequence.new({
-    NumberSequenceKeypoint.new(0, 1),
-    NumberSequenceKeypoint.new(0.5, 0.2),
-    NumberSequenceKeypoint.new(1, 1),
-})
-
--- Subtitle
-local subtitle = Instance.new("TextLabel", frame)
-subtitle.Size = UDim2.new(1, -24, 0, 16)
-subtitle.Position = UDim2.new(0, 12, 0, 46)
-subtitle.BackgroundTransparency = 1
-subtitle.Text = "Chọn ngôn ngữ • Select Language"
-subtitle.TextColor3 = Color3.fromRGB(140, 140, 160)
-subtitle.Font = Enum.Font.Gotham
-subtitle.TextSize = 11
-
--- Holder nút
-local holder = Instance.new("Frame", frame)
-holder.Size = UDim2.new(1, -24, 0, 70)
-holder.Position = UDim2.new(0, 12, 0, 70)
-holder.BackgroundTransparency = 1
-local lay = Instance.new("UIListLayout", holder)
-lay.FillDirection = Enum.FillDirection.Horizontal
-lay.Padding = UDim.new(0, 10)
-lay.HorizontalAlignment = Enum.HorizontalAlignment.Center
-lay.VerticalAlignment = Enum.VerticalAlignment.Center
-
--- Hàm tạo nút
-local function makeLangBtn(flagEmoji, langName, subName, color1, color2, onClick)
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(0.5, -5, 1, 0)
-    btn.BackgroundColor3 = color1
-    btn.BorderSizePixel = 0
-    btn.Text = ""
-    btn.AutoButtonColor = false
-    btn.Parent = holder
-
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 10)
-
-    local btnGradient = Instance.new("UIGradient", btn)
-    btnGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, color1),
-        ColorSequenceKeypoint.new(1, color2),
-    })
-    btnGradient.Rotation = 135
-
-    local btnStroke = Instance.new("UIStroke", btn)
-    btnStroke.Color = Color3.fromRGB(255, 255, 255)
-    btnStroke.Thickness = 1
-    btnStroke.Transparency = 0.85
-
-    local flag = Instance.new("TextLabel", btn)
-    flag.Size = UDim2.new(0, 34, 1, 0)
-    flag.Position = UDim2.new(0, 8, 0, 0)
-    flag.BackgroundTransparency = 1
-    flag.Text = flagEmoji
-    flag.Font = Enum.Font.GothamBold
-    flag.TextSize = 22
-    flag.TextColor3 = Color3.fromRGB(255, 255, 255)
-
-    local nameLabel = Instance.new("TextLabel", btn)
-    nameLabel.Size = UDim2.new(1, -50, 0, 18)
-    nameLabel.Position = UDim2.new(0, 44, 0, 12)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.Text = langName
-    nameLabel.Font = Enum.Font.GothamBold
-    nameLabel.TextSize = 13
-    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    nameLabel.TextXAlignment = Enum.TextXAlignment.Left
-    nameLabel.TextStrokeTransparency = 0.5
-
-    local subLabel = Instance.new("TextLabel", btn)
-    subLabel.Size = UDim2.new(1, -50, 0, 14)
-    subLabel.Position = UDim2.new(0, 44, 0, 30)
-    subLabel.BackgroundTransparency = 1
-    subLabel.Text = subName
-    subLabel.Font = Enum.Font.Gotham
-    subLabel.TextSize = 10
-    subLabel.TextColor3 = Color3.fromRGB(230, 230, 240)
-    subLabel.TextTransparency = 0.25
-    subLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-    btn.MouseEnter:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.15), {Size = UDim2.new(0.5, -2, 1.03, 0)}):Play()
-        TweenService:Create(btnStroke, TweenInfo.new(0.15), {Transparency = 0.3, Thickness = 1.5}):Play()
-    end)
-    btn.MouseLeave:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.15), {Size = UDim2.new(0.5, -5, 1, 0)}):Play()
-        TweenService:Create(btnStroke, TweenInfo.new(0.15), {Transparency = 0.85, Thickness = 1}):Play()
-    end)
-
-    btn.MouseButton1Down:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.08), {Size = UDim2.new(0.5, -8, 0.96, 0)}):Play()
-    end)
-    btn.MouseButton1Up:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.12), {Size = UDim2.new(0.5, -2, 1.03, 0)}):Play()
-    end)
-    btn.MouseButton1Click:Connect(onClick)
-
-    return btn
-end
-
--- Status
-local status = Instance.new("TextLabel", frame)
-status.Size = UDim2.new(1, -24, 0, 16)
-status.Position = UDim2.new(0, 12, 1, -24)
-status.BackgroundTransparency = 1
-status.Text = "Sẵn sàng • Ready"
-status.TextColor3 = Color3.fromRGB(130, 130, 150)
-status.Font = Enum.Font.Gotham
-status.TextSize = 10
-
--- Kéo thả
-local dragging, dragStart, startPos
-frame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = frame.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then dragging = false end
-        end)
-    end
-end)
-frame.InputChanged:Connect(function(input)
-    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local d = input.Position - dragStart
-        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + d.X, startPos.Y.Scale, startPos.Y.Offset + d.Y)
-        shadow.Position = frame.Position
-    end
-end)
-
--- Hiệu ứng xuất hiện
-frame.Size = UDim2.new(0, 0, 0, 0)
-frame.Position = UDim2.new(0.5, 0, 0.5, 0)
-shadow.Size = UDim2.new(0, 0, 0, 0)
-shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
-TweenService:Create(backdrop, TweenInfo.new(0.25), {BackgroundTransparency = 0.55}):Play()
-TweenService:Create(frame, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-    Size = UDim2.new(0, 360, 0, 180),
-    Position = UDim2.new(0.5, -180, 0.5, -90)
-}):Play()
-TweenService:Create(shadow, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-    Size = UDim2.new(0, 360, 0, 180),
-    Position = UDim2.new(0.5, -180, 0.5, -90)
-}):Play()
-
--- Pulse glow
-task.spawn(function()
-    while frame.Parent do
-        TweenService:Create(glowStroke, TweenInfo.new(2), {Transparency = 0.7}):Play()
-        task.wait(2)
-        TweenService:Create(glowStroke, TweenInfo.new(2), {Transparency = 0.3}):Play()
-        task.wait(2)
-    end
-end)
-
--- =========================================================
--- CHẠY
--- =========================================================
-local loading = false
-local function run(lang)
-    if loading then return end
-    loading = true
-    
-    status.Text = (lang == "vi") and "⏳ Đang tải..." or "⏳ Loading..."
-    status.TextColor3 = Color3.fromRGB(255, 200, 100)
-    
-    for _, child in ipairs(holder:GetChildren()) do
-        if child:IsA("TextButton") then
-            TweenService:Create(child, TweenInfo.new(0.3), {BackgroundTransparency = 0.6}):Play()
-        end
-    end
-    
-    task.spawn(function()
-        local src = fetchScript(SCRIPT_URL)
-        if not src then
-            status.Text = (lang == "vi") and "❌ Lỗi tải script!" or "❌ Failed!"
-            status.TextColor3 = Color3.fromRGB(255, 100, 100)
-            loading = false
-            return
-        end
-        
-        status.Text = (lang == "vi") and "▶️ Đang chạy..." or "▶️ Running..."
-        status.TextColor3 = Color3.fromRGB(100, 255, 150)
-        task.wait(0.3)
-        
-        TweenService:Create(backdrop, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
-        TweenService:Create(frame, TweenInfo.new(0.2, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-            Size = UDim2.new(0, 0, 0, 0),
-            Position = UDim2.new(0.5, 0, 0.5, 0)
-        }):Play()
-        TweenService:Create(shadow, TweenInfo.new(0.2), {Size = UDim2.new(0, 0, 0, 0), Position = UDim2.new(0.5, 0, 0.5, 0)}):Play()
         task.wait(0.25)
-        gui:Destroy()
-        
-        local loader = loadstring or load
-        local fn, err = loader(src)
-        if not fn then
-            warn("[LangSel] loadstring error: " .. tostring(err))
-            return
+
+        -- 4. Bấm nút "Import"
+        local importBtnElement = nil
+        for _, d in ipairs(chilliGui:GetDescendants()) do
+            if (d:IsA("TextLabel") or d:IsA("TextButton")) and d.Visible then
+                local t = d.Text:gsub("%s+", " "):match("^%s*(.-)%s*$") or ""
+                if t == "Import" or t == "Nhập" then
+                    importBtnElement = d; break
+                end
+            end
         end
-        
-        task.spawn(fn)
-        
-        if lang == "vi" then
-            task.wait(3)
-            task.spawn(startWatching)
-            task.spawn(pollingLoop)
+
+        if not importBtnElement then
+            statusCallback("❌ Ko thấy nút Import", Color3.fromRGB(255, 90, 90))
+            task.wait(2)
+            if updateIslandContentLanguage then updateIslandContentLanguage(currentLanguage) end
+            isConfigInjecting = false; return
+        end
+
+        stealthClick(importBtnElement)
+        task.wait(0.9)
+
+        -- 5. Mở Dropdown "Load Config"
+        local loadDropdownElement = nil
+        for _, lbl in ipairs(chilliGui:GetDescendants()) do
+            if lbl:IsA("TextLabel") and (lbl.Text:find("Load Config", 1, true) or lbl.Text:find("Tải Cấu Hình", 1, true)) then
+                local row = lbl.Parent
+                if row then
+                    loadDropdownElement = row:FindFirstChildWhichIsA("GuiButton", true)
+                    if not loadDropdownElement then
+                        for _, c in ipairs(row:GetDescendants()) do
+                            if (c:IsA("TextLabel") or c:IsA("TextButton")) and c.Text:find("Default", 1, true) then
+                                loadDropdownElement = c; break
+                            end
+                        end
+                    end
+                end
+                break
+            end
+        end
+
+        if loadDropdownElement then
+            stealthClick(loadDropdownElement)
+            task.wait(0.35)
+        end
+
+        -- 6. Chọn profile "main"
+        local mainProfileElement = nil
+        local t0 = tick()
+        while tick() - t0 < 4 do
+            for _, d in ipairs(chilliGui:GetDescendants()) do
+                if (d:IsA("TextLabel") or d:IsA("TextButton")) and d.Visible then
+                    local t = d.Text:gsub("%s+", " "):match("^%s*(.-)%s*$") or ""
+                    if t:lower() == "main" then
+                        mainProfileElement = d; break
+                    end
+                end
+            end
+            if mainProfileElement then break end
+            task.wait(0.12)
+        end
+
+        if not mainProfileElement then
+            statusCallback("❌ Ko có profile main", Color3.fromRGB(255, 90, 90))
+            task.wait(2)
+            if updateIslandContentLanguage then updateIslandContentLanguage(currentLanguage) end
+            isConfigInjecting = false; return
+        end
+
+        stealthClick(mainProfileElement)
+        task.wait(0.35)
+
+        -- 7. Bấm nút "Load"
+        local loadBtnElement = nil
+        for _, d in ipairs(chilliGui:GetDescendants()) do
+            if (d:IsA("TextLabel") or d:IsA("TextButton")) and d.Visible then
+                local t = d.Text:gsub("%s+", " "):match("^%s*(.-)%s*$") or ""
+                if t == "Load" or t == "Tải" then
+                    loadBtnElement = d; break
+                end
+            end
+        end
+
+        if not loadBtnElement then
+            statusCallback("❌ Ko thấy nút Load", Color3.fromRGB(255, 90, 90))
+            task.wait(2)
+            if updateIslandContentLanguage then updateIslandContentLanguage(currentLanguage) end
+            isConfigInjecting = false; return
+        end
+
+        stealthClick(loadBtnElement)
+        task.wait(0.4)
+
+        if switchGlobalLanguage then
+            switchGlobalLanguage("VI")
+        end
+
+        statusCallback("✔ ĐÃ NẠP XONG!", Color3.fromRGB(110, 245, 140))
+        task.wait(2.2)
+        if updateIslandContentLanguage then updateIslandContentLanguage(currentLanguage) end
+        isConfigInjecting = false
+    end)
+end
+
+-- ==================== 7. DYNAMIC ISLAND ====================
+local function createDynamicIslandUI()
+    local parentTarget = (gethui and gethui()) or CoreGui or LocalPlayer:WaitForChild("PlayerGui")
+    local oldIsland = parentTarget:FindFirstChild("Chilli_Dynamic_Island")
+    if oldIsland then oldIsland:Destroy() end
+
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "Chilli_Dynamic_Island"
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.IgnoreGuiInset = true
+    ScreenGui.DisplayOrder = 2147483647
+    ScreenGui.Parent = parentTarget
+
+    local isExpanded = false
+
+    local Island = Instance.new("Frame")
+    Island.Name = "Island"
+    Island.Size = UDim2.new(0, 172, 0, 36)
+    Island.AnchorPoint = Vector2.new(0.5, 0)
+    Island.Position = UDim2.new(0.5, 0, 0, 10)
+    Island.BackgroundColor3 = Color3.fromRGB(20, 10, 10)
+    Island.BackgroundTransparency = 0.08
+    Island.BorderSizePixel = 0
+    Island.ClipsDescendants = true
+    Island.Parent = ScreenGui
+
+    local IslandCorner = Instance.new("UICorner")
+    IslandCorner.CornerRadius = UDim.new(1, 0)
+    IslandCorner.Parent = Island
+
+    local IslandStroke = Instance.new("UIStroke")
+    IslandStroke.Thickness = 1.4
+    IslandStroke.Color = COLOR_FACE_TOP
+    IslandStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    IslandStroke.Parent = Island
+
+    -- VIEW THU GỌN
+    local CollapsedView = Instance.new("TextButton")
+    CollapsedView.Name = "CollapsedView"
+    CollapsedView.Size = UDim2.new(1, 0, 0, 36)
+    CollapsedView.BackgroundTransparency = 1
+    CollapsedView.Text = ""
+    CollapsedView.Parent = Island
+
+    local DotStatus = Instance.new("Frame")
+    DotStatus.Size = UDim2.new(0, 7, 0, 7)
+    DotStatus.Position = UDim2.new(0, 14, 0.5, -3)
+    DotStatus.BackgroundColor3 = Color3.fromRGB(90, 240, 140)
+    DotStatus.BorderSizePixel = 0
+    DotStatus.Parent = CollapsedView
+
+    local DotCorner = Instance.new("UICorner")
+    DotCorner.CornerRadius = UDim.new(1, 0)
+    DotCorner.Parent = DotStatus
+
+    local IslandTitle = Instance.new("TextLabel")
+    IslandTitle.Size = UDim2.new(1, -55, 1, 0)
+    IslandTitle.Position = UDim2.new(0, 28, 0, 0)
+    IslandTitle.BackgroundTransparency = 1
+    IslandTitle.Text = "🌶️ " .. BRAND
+    IslandTitle.Font = Enum.Font.GothamBold
+    IslandTitle.TextSize = 11
+    IslandTitle.TextColor3 = Color3.fromRGB(245, 250, 255)
+    IslandTitle.TextXAlignment = Enum.TextXAlignment.Left
+    IslandTitle.Parent = CollapsedView
+
+    local ChevronIcon = Instance.new("TextLabel")
+    ChevronIcon.Size = UDim2.new(0, 20, 1, 0)
+    ChevronIcon.Position = UDim2.new(1, -26, 0, 0)
+    ChevronIcon.BackgroundTransparency = 1
+    ChevronIcon.Text = "▼"
+    ChevronIcon.Font = Enum.Font.GothamBold
+    ChevronIcon.TextSize = 10
+    ChevronIcon.TextColor3 = Color3.fromRGB(255, 170, 140)
+    ChevronIcon.Parent = CollapsedView
+
+    -- VIEW MỞ RỘNG
+    local ExpandedView = Instance.new("Frame")
+    ExpandedView.Name = "ExpandedView"
+    ExpandedView.Size = UDim2.new(1, 0, 1, 0)
+    ExpandedView.BackgroundTransparency = 1
+    ExpandedView.Visible = false
+    ExpandedView.Parent = Island
+
+    local ExpHeader = Instance.new("Frame")
+    ExpHeader.Size = UDim2.new(1, 0, 0, 32)
+    ExpHeader.BackgroundTransparency = 1
+    ExpHeader.Parent = ExpandedView
+
+    local ExpTitle = Instance.new("TextLabel")
+    ExpTitle.Size = UDim2.new(1, -50, 1, 0)
+    ExpTitle.Position = UDim2.new(0, 14, 0, 0)
+    ExpTitle.BackgroundTransparency = 1
+    ExpTitle.Text = "🌶️ " .. BRAND .. " Control"
+    ExpTitle.Font = Enum.Font.GothamBold
+    ExpTitle.TextSize = 11
+    ExpTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ExpTitle.TextXAlignment = Enum.TextXAlignment.Left
+    ExpTitle.Parent = ExpHeader
+
+    local CloseBtn = Instance.new("TextButton")
+    CloseBtn.Size = UDim2.new(0, 26, 0, 26)
+    CloseBtn.Position = UDim2.new(1, -34, 0, 3)
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(50, 24, 24)
+    CloseBtn.Text = "▲"
+    CloseBtn.Font = Enum.Font.GothamBold
+    CloseBtn.TextSize = 11
+    CloseBtn.TextColor3 = Color3.fromRGB(255, 170, 140)
+    CloseBtn.Parent = ExpHeader
+
+    local CloseCorner = Instance.new("UICorner")
+    CloseCorner.CornerRadius = UDim.new(1, 0)
+    CloseCorner.Parent = CloseBtn
+
+    -- Hàng 1: Nút đổi ngôn ngữ
+    local LangCapsule = Instance.new("Frame")
+    LangCapsule.Size = UDim2.new(1, -24, 0, 32)
+    LangCapsule.Position = UDim2.new(0, 12, 0, 34)
+    LangCapsule.BackgroundColor3 = Color3.fromRGB(36, 18, 18)
+    LangCapsule.BorderSizePixel = 0
+    LangCapsule.Parent = ExpandedView
+
+    local LangCorner = Instance.new("UICorner")
+    LangCorner.CornerRadius = UDim.new(1, 0)
+    LangCorner.Parent = LangCapsule
+
+    local LangSlider = Instance.new("Frame")
+    LangSlider.Size = UDim2.new(0.5, -2, 1, -4)
+    LangSlider.Position = UDim2.new(0, 2, 0, 2)
+    LangSlider.BackgroundColor3 = COLOR_FACE_BOTTOM
+    LangSlider.BorderSizePixel = 0
+    LangSlider.Parent = LangCapsule
+
+    local SliderCorner = Instance.new("UICorner")
+    SliderCorner.CornerRadius = UDim.new(1, 0)
+    SliderCorner.Parent = LangSlider
+
+    local SliderGrad = Instance.new("UIGradient")
+    SliderGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, COLOR_FACE_TOP),
+        ColorSequenceKeypoint.new(1, COLOR_FACE_BOTTOM)
+    })
+    SliderGrad.Rotation = 90
+    SliderGrad.Parent = LangSlider
+
+    local BtnVI = Instance.new("TextButton")
+    BtnVI.Size = UDim2.new(0.5, 0, 1, 0)
+    BtnVI.Position = UDim2.new(0, 0, 0, 0)
+    BtnVI.BackgroundTransparency = 1
+    BtnVI.Text = "🇻🇳 TIẾNG VIỆT"
+    BtnVI.Font = Enum.Font.GothamBold
+    BtnVI.TextSize = 10
+    BtnVI.TextColor3 = Color3.fromRGB(255, 255, 255)
+    BtnVI.ZIndex = 5
+    BtnVI.Parent = LangCapsule
+
+    local BtnEN = Instance.new("TextButton")
+    BtnEN.Size = UDim2.new(0.5, 0, 1, 0)
+    BtnEN.Position = UDim2.new(0.5, 0, 0, 0)
+    BtnEN.BackgroundTransparency = 1
+    BtnEN.Text = "🌐 ENGLISH"
+    BtnEN.Font = Enum.Font.GothamBold
+    BtnEN.TextSize = 10
+    BtnEN.TextColor3 = Color3.fromRGB(190, 160, 155)
+    BtnEN.ZIndex = 5
+    BtnEN.Parent = LangCapsule
+
+    -- Hàng 2: Thẻ Setting Auto Farm
+    local AutoFarmCard = Instance.new("Frame")
+    AutoFarmCard.Size = UDim2.new(1, -24, 0, 96)
+    AutoFarmCard.Position = UDim2.new(0, 12, 0, 72)
+    AutoFarmCard.BackgroundColor3 = Color3.fromRGB(30, 15, 15)
+    AutoFarmCard.BorderSizePixel = 0
+    AutoFarmCard.Parent = ExpandedView
+
+    local AutoFarmCorner = Instance.new("UICorner")
+    AutoFarmCorner.CornerRadius = UDim.new(0, 10)
+    AutoFarmCorner.Parent = AutoFarmCard
+
+    local AutoFarmStroke = Instance.new("UIStroke")
+    AutoFarmStroke.Thickness = 1
+    AutoFarmStroke.Color = Color3.fromRGB(140, 50, 45)
+    AutoFarmStroke.Parent = AutoFarmCard
+
+    local AutoFarmBtn = Instance.new("TextButton")
+    AutoFarmBtn.Size = UDim2.new(1, -12, 0, 28)
+    AutoFarmBtn.Position = UDim2.new(0, 6, 0, 6)
+    AutoFarmBtn.BackgroundColor3 = COLOR_FACE_BOTTOM
+    AutoFarmBtn.BorderSizePixel = 0
+    AutoFarmBtn.Text = "⚙️ SETTING AUTO FARM"
+    AutoFarmBtn.Font = Enum.Font.GothamBold
+    AutoFarmBtn.TextSize = 11
+    AutoFarmBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    AutoFarmBtn.Parent = AutoFarmCard
+
+    local BtnCorner = Instance.new("UICorner")
+    BtnCorner.CornerRadius = UDim.new(0, 8)
+    BtnCorner.Parent = AutoFarmBtn
+
+    local BtnGrad = Instance.new("UIGradient")
+    BtnGrad.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, COLOR_FACE_TOP),
+        ColorSequenceKeypoint.new(1, COLOR_FACE_BOTTOM)
+    })
+    BtnGrad.Rotation = 90
+    BtnGrad.Parent = AutoFarmBtn
+
+    local SubLabel = Instance.new("TextLabel")
+    SubLabel.Size = UDim2.new(1, -16, 0, 54)
+    SubLabel.Position = UDim2.new(0, 8, 0, 37)
+    SubLabel.BackgroundTransparency = 1
+    SubLabel.Font = Enum.Font.GothamMedium
+    SubLabel.TextSize = 8.8
+    SubLabel.TextColor3 = Color3.fromRGB(255, 215, 200)
+    SubLabel.TextXAlignment = Enum.TextXAlignment.Left
+    SubLabel.TextYAlignment = Enum.TextYAlignment.Top
+    SubLabel.TextWrapped = true
+    SubLabel.Text = "• Tự động làm từ A-Z\n• Nhặt trứng trên Secret 2B+\n• Tự động chạy máy tập khi rảnh rỗi\n• Tự động làm các nhiệm vụ còn thiếu và sự kiện..."
+    SubLabel.Parent = AutoFarmCard
+
+    updateIslandContentLanguage = function(lang)
+        AutoFarmBtn.Text = "⚙️ SETTING AUTO FARM"
+        TweenService:Create(AutoFarmBtn, TweenInfo.new(0.18), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+        if lang == "VI" then
+            SubLabel.Text = "• Tự động làm từ A-Z\n• Nhặt trứng trên Secret 2B+\n• Tự động chạy máy tập khi rảnh rỗi\n• Tự động làm các nhiệm vụ còn thiếu và sự kiện..."
+        else
+            SubLabel.Text = "• Automated from A to Z\n• Steal Secret eggs 2B+\n• Auto run treadmill when idle\n• Complete missing quests & live events..."
+        end
+    end
+
+    local function setExpanded(expand)
+        if isExpanded == expand then return end
+        isExpanded = expand
+
+        if expand then
+            CollapsedView.Visible = false
+            ExpandedView.Visible = true
+            TweenService:Create(Island, TweenInfo.new(0.38, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, 320, 0, 178)
+            }):Play()
+            TweenService:Create(IslandCorner, TweenInfo.new(0.35), {CornerRadius = UDim.new(0, 16)}):Play()
+        else
+            ExpandedView.Visible = false
+            CollapsedView.Visible = true
+            TweenService:Create(Island, TweenInfo.new(0.32, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, 172, 0, 36)
+            }):Play()
+            TweenService:Create(IslandCorner, TweenInfo.new(0.3), {CornerRadius = UDim.new(1, 0)}):Play()
+        end
+    end
+
+    CollapsedView.MouseButton1Click:Connect(function() setExpanded(true) end)
+    CloseBtn.MouseButton1Click:Connect(function() setExpanded(false) end)
+
+    local function switchMode(target)
+        if currentLanguage == target then return end
+        currentLanguage = target
+
+        if target == "VI" then
+            TweenService:Create(LangSlider, TweenInfo.new(0.32, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                Position = UDim2.new(0, 2, 0, 2)
+            }):Play()
+            TweenService:Create(BtnVI, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+            TweenService:Create(BtnEN, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(190, 160, 155)}):Play()
+        else
+            TweenService:Create(LangSlider, TweenInfo.new(0.32, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {
+                Position = UDim2.new(0.5, 0, 0, 2)
+            }):Play()
+            TweenService:Create(BtnEN, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+            TweenService:Create(BtnVI, TweenInfo.new(0.2), {TextColor3 = Color3.fromRGB(190, 160, 155)}):Play()
+        end
+
+        updateAllActive()
+
+        if updateIslandContentLanguage then
+            updateIslandContentLanguage(target)
+        end
+    end
+
+    switchGlobalLanguage = switchMode
+    BtnVI.MouseButton1Click:Connect(function() switchMode("VI") end)
+    BtnEN.MouseButton1Click:Connect(function() switchMode("EN") end)
+
+    local function updateStatus(txt, col)
+        AutoFarmBtn.Text = txt
+        TweenService:Create(AutoFarmBtn, TweenInfo.new(0.18), {TextColor3 = col}):Play()
+    end
+
+    AutoFarmBtn.MouseButton1Click:Connect(function()
+        if isConfigInjecting then return end
+        TweenService:Create(AutoFarmCard, TweenInfo.new(0.08), {Size = UDim2.new(1, -28, 0, 92)}):Play()
+        task.delay(0.08, function()
+            TweenService:Create(AutoFarmCard, TweenInfo.new(0.15, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(1, -24, 0, 96)}):Play()
+        end)
+        executeAutoConfig(updateStatus)
+    end)
+
+    -- Kéo thả Island, giới hạn biên theo kích thước thật của Island và màn hình
+    -- FIX: dùng ScreenGui.AbsoluteSize + Island.AbsoluteSize thay vì số cố định (-180 / -50)
+    local dragging, dragStart, startPos = false, nil, nil
+    Island.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = Island.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
+        end
+    end)
+
+    Island.InputChanged:Connect(function(input)
+        if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragging then
+            local delta = input.Position - dragStart
+            local screen = ScreenGui.AbsoluteSize
+            local size = Island.AbsoluteSize
+
+            -- Island neo ở giữa-trên (AnchorPoint 0.5, 0), nên X tính từ tâm
+            local limitX = math.max((screen.X - size.X) / 2, 0)
+            local limitY = math.max(screen.Y - size.Y, 0)
+
+            local baseX = startPos.X.Offset + (startPos.X.Scale - 0.5) * screen.X
+            local newX = math.clamp(baseX + delta.X, -limitX, limitX)
+            local newY = math.clamp(startPos.Y.Offset + delta.Y, 0, limitY)
+
+            Island.Position = UDim2.new(0.5, newX, 0, newY)
         end
     end)
 end
 
--- Tạo 2 nút
-makeLangBtn(
-    "🇻🇳",
-    "Tiếng Việt",
-    "Vietnamese",
-    Color3.fromRGB(180, 30, 30),
-    Color3.fromRGB(220, 60, 60),
-    function() run("vi") end
-)
+-- ==================== 8. OBSERVER (DỰA TRÊN SỰ KIỆN, KHÔNG QUÉT LIÊN TỤC) ====================
+task.delay(1.2, function()
+    createDynamicIslandUI()
 
-makeLangBtn(
-    "🇺🇸",
-    "English",
-    "Tiếng Anh",
-    Color3.fromRGB(30, 70, 180),
-    Color3.fromRGB(60, 120, 220),
-    function() run("en") end
-)
+    local searchRoots = {
+        gethui and gethui(),
+        CoreGui,
+        LocalPlayer:FindFirstChild("PlayerGui")
+    }
+
+    local activeHubGui = nil
+    local hubConnection = nil
+
+    local function findHub()
+        for _, root in ipairs(searchRoots) do
+            if root then
+                for _, g in ipairs(root:GetChildren()) do
+                    if g:IsA("ScreenGui") and g.Name ~= "Chilli_Dynamic_Island" then
+                        for _, d in ipairs(g:GetDescendants()) do
+                            if (d:IsA("TextLabel") or d:IsA("TextButton")) and d.Text:lower():find("chilli hub", 1, true) then
+                                return g
+                            end
+                        end
+                    end
+                end
+            end
+        end
+        return nil
+    end
+
+    local function processElement(desc)
+        if desc:IsA("TextLabel") or desc:IsA("TextButton") or desc:IsA("TextBox") then
+            hookElement(desc)
+            inspectAndApplySoftBlue(desc)
+        end
+    end
+
+    -- FIX: quét toàn bộ MỘT LẦN khi tìm thấy hub, sau đó chỉ lắng nghe DescendantAdded
+    local function attachToHub(gui)
+        if hubConnection then hubConnection:Disconnect() end
+        activeHubGui = gui
+        for _, desc in ipairs(gui:GetDescendants()) do
+            processElement(desc)
+        end
+        hubConnection = gui.DescendantAdded:Connect(function(desc)
+            task.defer(processElement, desc)
+        end)
+    end
+
+    -- Vòng nhẹ: chỉ để tìm lại hub khi chưa có hoặc hub bị tạo lại (1 giây/lần)
+    task.spawn(function()
+        while true do
+            if not activeHubGui or not activeHubGui.Parent then
+                local gui = findHub()
+                if gui then attachToHub(gui) end
+            end
+            task.wait(1)
+        end
+    end)
+end)
